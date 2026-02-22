@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { api } from "~/trpc/react";
 
 interface InviteCode {
@@ -26,12 +27,17 @@ export function InviteManager({
         { code: result.code, used: false, usedAt: null, usedBy: null },
         ...prev,
       ]);
+      toast.success("Invite code generated");
+    },
+    onError: (err) => {
+      toast.error(err.message);
     },
   });
 
   const handleCopy = async (code: string) => {
     await navigator.clipboard.writeText(code);
     setCopiedCode(code);
+    toast.success("Invite code copied to clipboard");
     setTimeout(() => setCopiedCode(null), 2000);
   };
 

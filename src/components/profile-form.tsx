@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { api } from "~/trpc/react";
+import { ImageUpload } from "~/components/image-upload";
 
 interface ProfileData {
   username: string;
@@ -100,6 +101,10 @@ export function ProfileForm({
     });
   };
 
+  // Helper to convert single-image upload value (string[] with 0-1 items) to/from string state
+  const avatarValue = avatarUrl ? [avatarUrl] : [];
+  const bannerValue = bannerUrl ? [bannerUrl] : [];
+
   const inputClass =
     "mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none";
   const labelClass = "block text-sm font-medium text-zinc-300";
@@ -160,31 +165,25 @@ export function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="avatarUrl" className={labelClass}>
-          Avatar URL
-        </label>
-        <input
-          id="avatarUrl"
-          type="url"
-          value={avatarUrl}
-          onChange={(e) => setAvatarUrl(e.target.value)}
-          className={inputClass}
-          placeholder="https://..."
-        />
+        <label className={labelClass}>Avatar</label>
+        <div className="mt-1">
+          <ImageUpload
+            value={avatarValue}
+            onChange={(urls) => setAvatarUrl(urls[0] ?? "")}
+            maxImages={1}
+          />
+        </div>
       </div>
 
       <div>
-        <label htmlFor="bannerUrl" className={labelClass}>
-          Banner URL
-        </label>
-        <input
-          id="bannerUrl"
-          type="url"
-          value={bannerUrl}
-          onChange={(e) => setBannerUrl(e.target.value)}
-          className={inputClass}
-          placeholder="https://..."
-        />
+        <label className={labelClass}>Banner</label>
+        <div className="mt-1">
+          <ImageUpload
+            value={bannerValue}
+            onChange={(urls) => setBannerUrl(urls[0] ?? "")}
+            maxImages={1}
+          />
+        </div>
       </div>
 
       <div>

@@ -55,6 +55,7 @@ model User {
     image         String?
     password      String?
     memberNumber  String?   @unique
+    role          String    @default("user") // user, admin
 
     // Referral tree
     invitedById String?
@@ -81,6 +82,13 @@ model User {
 
     conversationParticipants ConversationParticipant[]
     messagesSent             Message[] @relation("MessageSender")
+
+    wishlistItems Wishlist[]
+    disputesFiled Dispute[] @relation("DisputeFiler")
+    disputesAgainst Dispute[] @relation("DisputeAgainst")
+
+    sellerBalance SellerBalance?
+    payoutRequests PayoutRequest[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -127,6 +135,7 @@ model Listing {
     order         Order?
     legitChecks   LegitCheck[]
     conversations Conversation[]
+    wishlistItems Wishlist[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -149,6 +158,8 @@ model Order {
 
     paymentMethod         String  @default("stripe") // "stripe" | "crypto"
     totalAmount           Int // cents
+    platformFee           Int     @default(0) // cents - platform commission
+    sellerPayout          Int     @default(0) // cents - amount seller receives
     stripePriceId         String?
     paymentIntentId       String?
     checkoutSessionId     String?
@@ -158,8 +169,10 @@ model Order {
     shippingAddressId String?
     shippingAddress   ShippingAddress? @relation(fields: [shippingAddressId], references: [id])
     trackingNumber    String?
+    shippingCarrier   String? // usps, ups, fedex, dhl, other
 
-    review Review?
+    review  Review?
+    dispute Dispute?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -259,4 +272,68 @@ model Message {
     offerAmount    Int?
     offerStatus    String? // pending, accepted, declined
     createdAt      DateTime     @default(now())
+}
+
+// ─── New Feature Models ───────────────────────────────────────────
+
+model Wishlist {
+    id        String   @id @default(cuid())
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    listingId String
+    listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+
+    @@unique([userId, listingId])
+    @@index([userId])
+}
+
+model Dispute {
+    id        String @id @default(cuid())
+    orderId   String @unique
+    order     Order  @relation(fields: [orderId], references: [id])
+    filerId   String
+    filer     User   @relation("DisputeFiler", fields: [filerId], references: [id])
+    againstId String
+    against   User   @relation("DisputeAgainst", fields: [againstId], references: [id])
+
+    reason      String // item_not_received, item_not_as_described, counterfeit, other
+    description String
+    status      String @default("open") // open, under_review, resolved_buyer, resolved_seller, closed
+    adminNotes  String?
+    resolution  String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([filerId])
+    @@index([againstId])
+    @@index([status])
+}
+
+model SellerBalance {
+    id              String @id @default(cuid())
+    userId          String @unique
+    user            User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    availableAmount Int    @default(0) // cents
+    pendingAmount   Int    @default(0) // cents
+    totalEarned     Int    @default(0) // cents
+
+    updatedAt DateTime @updatedAt
+}
+
+model PayoutRequest {
+    id     String @id @default(cuid())
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+    amount Int // cents
+    status String @default("pending") // pending, processing, completed, rejected
+    method String @default("stripe") // stripe, crypto
+    notes  String?
+
+    createdAt   DateTime  @default(now())
+    processedAt DateTime?
+
+    @@index([userId])
+    @@index([status])
 }

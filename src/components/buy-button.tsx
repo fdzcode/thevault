@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { api } from "~/trpc/react";
 
 type PaymentMethod = "stripe" | "crypto";
@@ -21,10 +22,12 @@ export function BuyButton({ listingId }: { listingId: string }) {
   const createStripeCheckout = api.payment.createCheckoutSession.useMutation({
     onSuccess: (result) => {
       if (result.url) {
+        toast.success("Redirecting to checkout...");
         window.location.href = result.url;
       }
     },
     onError: (err) => {
+      toast.error(err.message);
       setError(err.message);
     },
   });
@@ -33,10 +36,12 @@ export function BuyButton({ listingId }: { listingId: string }) {
     api.payment.createCryptoCheckoutSession.useMutation({
       onSuccess: (result) => {
         if (result.url) {
+          toast.success("Redirecting to crypto checkout...");
           window.location.href = result.url;
         }
       },
       onError: (err) => {
+        toast.error(err.message);
         setError(err.message);
       },
     });

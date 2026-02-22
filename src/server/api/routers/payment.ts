@@ -8,6 +8,8 @@ import {
 import { getStripe } from "~/lib/stripe";
 import { createInvoice } from "~/lib/nowpayments";
 import { shippingAddressSchema } from "~/lib/validators";
+import { checkRateLimit } from "~/lib/rate-limit";
+import { calculateFees } from "~/lib/fees";
 
 const checkoutInput = z.object({
   listingId: z.string(),
@@ -18,6 +20,11 @@ export const paymentRouter = createTRPCRouter({
   createCheckoutSession: protectedProcedure
     .input(checkoutInput)
     .mutation(async ({ ctx, input }) => {
+      const { allowed } = checkRateLimit(`payment:${ctx.session.user.id}`, 10, 60000);
+      if (!allowed) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many attempts. Please try again later." });
+      }
+
       const listing = await ctx.db.listing.findUnique({
         where: { id: input.listingId },
         include: { seller: true },
@@ -44,6 +51,9 @@ export const paymentRouter = createTRPCRouter({
         data: input.shippingAddress,
       });
 
+      // Calculate platform fees
+      const { platformFee, sellerPayout } = calculateFees(listing.price);
+
       // Create pending order
       const order = await ctx.db.order.create({
         data: {
@@ -51,6 +61,8 @@ export const paymentRouter = createTRPCRouter({
           buyerId: ctx.session.user.id,
           sellerId: listing.sellerId,
           totalAmount: listing.price,
+          platformFee,
+          sellerPayout,
           shippingAddressId: shippingAddr.id,
           status: "pending",
           paymentMethod: "stripe",
@@ -93,6 +105,11 @@ export const paymentRouter = createTRPCRouter({
   createCryptoCheckoutSession: protectedProcedure
     .input(checkoutInput)
     .mutation(async ({ ctx, input }) => {
+      const { allowed } = checkRateLimit(`payment:${ctx.session.user.id}`, 10, 60000);
+      if (!allowed) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many attempts. Please try again later." });
+      }
+
       const listing = await ctx.db.listing.findUnique({
         where: { id: input.listingId },
         include: { seller: true },
@@ -119,6 +136,9 @@ export const paymentRouter = createTRPCRouter({
         data: input.shippingAddress,
       });
 
+      // Calculate platform fees
+      const { platformFee, sellerPayout } = calculateFees(listing.price);
+
       // Create pending order with crypto payment method
       const order = await ctx.db.order.create({
         data: {
@@ -126,6 +146,8 @@ export const paymentRouter = createTRPCRouter({
           buyerId: ctx.session.user.id,
           sellerId: listing.sellerId,
           totalAmount: listing.price,
+          platformFee,
+          sellerPayout,
           shippingAddressId: shippingAddr.id,
           status: "pending",
           paymentMethod: "crypto",

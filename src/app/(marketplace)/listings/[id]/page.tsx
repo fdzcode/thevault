@@ -3,6 +3,7 @@ import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { BuyButton } from "~/components/buy-button";
 import { VouchButton } from "~/components/vouch-button";
+import { WishlistButton } from "~/components/wishlist-button";
 import { MessageSellerButton } from "~/components/message-seller-button";
 
 export default async function ListingDetailPage({
@@ -29,9 +30,10 @@ export default async function ListingDetailPage({
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-2 text-2xl font-bold">{listing.title}</h1>
-      <p className="mb-4 text-lg text-zinc-300">
+      <p className="mb-1 text-lg text-zinc-300">
         ${(listing.price / 100).toFixed(2)}
       </p>
+      <p className="mb-4 text-xs text-zinc-500">8% platform fee on purchase</p>
       <div className="mb-4 flex gap-2 text-sm text-zinc-400">
         <span>{listing.category}</span>
         <span>&middot;</span>
@@ -48,7 +50,7 @@ export default async function ListingDetailPage({
           <span className="ml-1 text-xs text-zinc-600">#{listing.seller.memberNumber}</span>
         )}
       </p>
-      <div className="mb-4">
+      <div className="mb-4 flex items-center gap-4">
         <VouchButton
           listingId={listing.id}
           initialCount={listing.vouchCount}
@@ -56,6 +58,7 @@ export default async function ListingDetailPage({
           isOwnListing={!!session && session.user.id === listing.sellerId}
           isLoggedIn={!!session}
         />
+        <WishlistButton listingId={listing.id} isLoggedIn={!!session} />
       </div>
       {canBuy && (
         <div className="flex items-center gap-4">

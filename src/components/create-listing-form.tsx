@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import { ImageUpload } from "~/components/image-upload";
 
 const CATEGORIES = [
   { value: "apparel", label: "Apparel" },
@@ -33,7 +34,6 @@ export function CreateListingForm() {
   const [condition, setCondition] = useState<(typeof CONDITIONS)[number]["value"]>("new");
   const [tags, setTags] = useState("");
   const [images, setImages] = useState<string[]>([]);
-  const [imageInput, setImageInput] = useState("");
 
   const createListing = api.listing.create.useMutation({
     onSuccess: (result) => {
@@ -43,28 +43,6 @@ export function CreateListingForm() {
       setError(err.message);
     },
   });
-
-  const handleAddImage = () => {
-    const url = imageInput.trim();
-    if (!url) return;
-    try {
-      new URL(url);
-    } catch {
-      setError("Invalid image URL");
-      return;
-    }
-    if (images.length >= 10) {
-      setError("Maximum 10 images");
-      return;
-    }
-    setImages([...images, url]);
-    setImageInput("");
-    setError(null);
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,47 +185,13 @@ export function CreateListingForm() {
 
       <div>
         <label className={labelClass}>Images (up to 10)</label>
-        <div className="mt-1 flex gap-2">
-          <input
-            type="url"
-            value={imageInput}
-            onChange={(e) => setImageInput(e.target.value)}
-            className={inputClass}
-            placeholder="https://example.com/image.jpg"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleAddImage();
-              }
-            }}
+        <div className="mt-1">
+          <ImageUpload
+            value={images}
+            onChange={setImages}
+            maxImages={10}
           />
-          <button
-            type="button"
-            onClick={handleAddImage}
-            className="mt-1 shrink-0 rounded border border-zinc-700 px-3 py-2 text-sm text-zinc-300 transition hover:bg-zinc-800"
-          >
-            Add
-          </button>
         </div>
-        {images.length > 0 && (
-          <ul className="mt-2 space-y-1">
-            {images.map((url, i) => (
-              <li
-                key={i}
-                className="flex items-center gap-2 text-sm text-zinc-400"
-              >
-                <span className="truncate">{url}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(i)}
-                  className="shrink-0 text-red-400 hover:text-red-300"
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
 
       {error && <p className="text-sm text-red-400">{error}</p>}

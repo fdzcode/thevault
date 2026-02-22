@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { api } from "~/trpc/react";
 
 export function MessageSellerButton({
@@ -14,7 +15,11 @@ export function MessageSellerButton({
 
   const startConversation = api.message.startConversation.useMutation({
     onSuccess: (result) => {
+      toast.success("Opening conversation...");
       router.push(`/messages/${result.conversationId}`);
+    },
+    onError: (err) => {
+      toast.error(err.message);
     },
   });
 

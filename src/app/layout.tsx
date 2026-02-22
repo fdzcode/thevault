@@ -2,6 +2,7 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
+import { Toaster } from "sonner";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { NavBar } from "~/components/nav-bar";
@@ -27,6 +28,7 @@ export default function RootLayout({
           <NavBar />
           {children}
         </TRPCReactProvider>
+        <Toaster theme="dark" position="bottom-right" richColors />
       </body>
     </html>
   );

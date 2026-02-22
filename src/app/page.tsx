@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { auth } from "~/server/auth";
+import { HomeSearch } from "~/components/home-search";
 
 export default async function Home() {
   const session = await auth();
@@ -14,6 +15,8 @@ export default async function Home() {
         <p className="text-lg text-zinc-400">
           Custom designer trading community &amp; marketplace
         </p>
+
+        <HomeSearch />
 
         <div className="flex gap-4">
           <Link

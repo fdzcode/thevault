@@ -9,6 +9,7 @@ import {
 import {
   categoryEnum,
   conditionEnum,
+  imageUrlSchema,
   listingStatusEnum,
 } from "~/lib/validators";
 
@@ -22,7 +23,7 @@ export const listingRouter = createTRPCRouter({
         category: categoryEnum,
         condition: conditionEnum,
         tags: z.string().max(500).default(""),
-        images: z.array(z.string().url()).max(10).default([]),
+        images: z.array(imageUrlSchema).max(10).default([]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -57,7 +58,7 @@ export const listingRouter = createTRPCRouter({
         category: categoryEnum.optional(),
         condition: conditionEnum.optional(),
         tags: z.string().max(500).optional(),
-        images: z.array(z.string().url()).max(10).optional(),
+        images: z.array(imageUrlSchema).max(10).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

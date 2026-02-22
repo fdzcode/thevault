@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         where: { id: order_id },
       });
 
-      if (order && order.status === "pending") {
+      if (order?.status === "pending") {
         await db.$transaction([
           db.order.update({
             where: { id: order_id },
@@ -62,6 +62,22 @@ export async function POST(req: NextRequest) {
             data: { status: "sold" },
           }),
         ]);
+
+        // Credit seller balance with payout amount
+        const payoutAmount = order.sellerPayout || order.totalAmount;
+        await db.sellerBalance.upsert({
+          where: { userId: order.sellerId },
+          create: {
+            userId: order.sellerId,
+            pendingAmount: payoutAmount,
+            availableAmount: 0,
+            totalEarned: payoutAmount,
+          },
+          update: {
+            pendingAmount: { increment: payoutAmount },
+            totalEarned: { increment: payoutAmount },
+          },
+        });
       }
       break;
     }
@@ -72,7 +88,7 @@ export async function POST(req: NextRequest) {
         where: { id: order_id },
       });
 
-      if (order && order.status === "pending") {
+      if (order?.status === "pending") {
         await db.order.update({
           where: { id: order_id },
           data: { status: "cancelled" },

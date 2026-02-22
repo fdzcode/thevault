@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { api } from "~/trpc/react";
 
 export function VouchButton({
@@ -23,6 +24,10 @@ export function VouchButton({
     onSuccess: (result) => {
       setVouched(result.vouched);
       setCount((c) => (result.vouched ? c + 1 : c - 1));
+      toast.success(result.vouched ? "Vouched for this item" : "Vouch removed");
+    },
+    onError: (err) => {
+      toast.error(err.message);
     },
   });
 

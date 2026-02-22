@@ -12,12 +12,19 @@ import {
   deriveMemberNumber,
   DEFAULT_INVITE_LIMIT,
 } from "~/server/auth/invite-utils";
+import { checkRateLimit } from "~/lib/rate-limit";
 
 export const authRouter = createTRPCRouter({
   /** Check whether an invite code is valid (exists and unused). */
   validateInviteCode: publicProcedure
     .input(z.object({ code: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
+      const ip = ctx.headers.get("x-forwarded-for") ?? "unknown";
+      const { allowed } = checkRateLimit(`auth:validateInvite:${ip}`, 10, 60000);
+      if (!allowed) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many attempts. Please try again later." });
+      }
+
       const invite = await ctx.db.inviteCode.findUnique({
         where: { code: input.code.toUpperCase() },
       });
@@ -35,6 +42,12 @@ export const authRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const ip = ctx.headers.get("x-forwarded-for") ?? "unknown";
+      const { allowed } = checkRateLimit(`auth:register:${ip}`, 5, 60000);
+      if (!allowed) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many attempts. Please try again later." });
+      }
+
       const code = input.inviteCode.toUpperCase();
 
       // Validate invite code

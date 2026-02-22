@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { api } from "~/trpc/react";
 
 type MessageData = {
@@ -50,6 +51,10 @@ export function MessageThread({
       setContent("");
       setOfferStr("");
       setShowOfferInput(false);
+      toast.success(msg.offerAmount ? "Offer sent" : "Message sent");
+    },
+    onError: (err) => {
+      toast.error(err.message);
     },
   });
 
@@ -62,9 +67,13 @@ export function MessageThread({
             : m,
         ),
       );
+      toast.success(variables.action === "accepted" ? "Offer accepted" : "Offer declined");
       if (result.orderId) {
         router.push(`/orders/${result.orderId}`);
       }
+    },
+    onError: (err) => {
+      toast.error(err.message);
     },
   });
 
