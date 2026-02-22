@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
@@ -13,7 +14,15 @@ export default async function OrdersPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">My Orders</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">My Orders</h1>
+        <Link
+          href="/orders/sales"
+          className="text-sm text-zinc-400 transition hover:text-white"
+        >
+          View Sales
+        </Link>
+      </div>
       {orders.length === 0 ? (
         <p className="text-zinc-500">No orders yet.</p>
       ) : (

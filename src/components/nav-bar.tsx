@@ -28,6 +28,12 @@ export async function NavBar() {
                   My Orders
                 </Link>
                 <Link
+                  href="/orders/sales"
+                  className="text-zinc-400 transition hover:text-white"
+                >
+                  My Sales
+                </Link>
+                <Link
                   href="/profile"
                   className="text-zinc-400 transition hover:text-white"
                 >
