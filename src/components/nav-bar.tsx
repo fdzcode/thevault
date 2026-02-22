@@ -34,6 +34,12 @@ export async function NavBar() {
                   My Sales
                 </Link>
                 <Link
+                  href="/messages"
+                  className="text-zinc-400 transition hover:text-white"
+                >
+                  Messages
+                </Link>
+                <Link
                   href="/profile"
                   className="text-zinc-400 transition hover:text-white"
                 >
@@ -54,6 +60,9 @@ export async function NavBar() {
             <>
               <span className="text-sm text-zinc-300">
                 {session.user?.name}
+                {session.user?.memberNumber && (
+                  <span className="ml-1 text-xs text-zinc-500">#{session.user.memberNumber}</span>
+                )}
               </span>
               <SignOutButton />
             </>

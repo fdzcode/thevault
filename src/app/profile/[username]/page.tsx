@@ -20,7 +20,12 @@ export default async function PublicProfilePage({
       <h1 className="mb-2 text-2xl font-bold">
         {profile.displayName ?? profile.username}
       </h1>
-      <p className="mb-4 text-sm text-zinc-400">@{profile.username}</p>
+      <p className="mb-4 text-sm text-zinc-400">
+        @{profile.username}
+        {profile.user.memberNumber && (
+          <span className="ml-2 text-xs text-zinc-500">#{profile.user.memberNumber}</span>
+        )}
+      </p>
       {profile.bio && (
         <p className="mb-4 text-zinc-300">{profile.bio}</p>
       )}

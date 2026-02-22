@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { BuyButton } from "~/components/buy-button";
+import { VouchButton } from "~/components/vouch-button";
+import { MessageSellerButton } from "~/components/message-seller-button";
 
 export default async function ListingDetailPage({
   params,
@@ -42,8 +44,28 @@ export default async function ListingDetailPage({
       </p>
       <p className="mb-6 text-sm text-zinc-500">
         Sold by {listing.seller.profile?.displayName ?? listing.seller.name}
+        {listing.seller.memberNumber && (
+          <span className="ml-1 text-xs text-zinc-600">#{listing.seller.memberNumber}</span>
+        )}
       </p>
-      {canBuy && <BuyButton listingId={listing.id} />}
+      <div className="mb-4">
+        <VouchButton
+          listingId={listing.id}
+          initialCount={listing.vouchCount}
+          initialVouched={listing.userVouched}
+          isOwnListing={!!session && session.user.id === listing.sellerId}
+          isLoggedIn={!!session}
+        />
+      </div>
+      {canBuy && (
+        <div className="flex items-center gap-4">
+          <BuyButton listingId={listing.id} />
+          <MessageSellerButton
+            sellerId={listing.sellerId}
+            listingId={listing.id}
+          />
+        </div>
+      )}
     </main>
   );
 }

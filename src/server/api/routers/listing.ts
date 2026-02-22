@@ -26,6 +26,13 @@ export const listingRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (input.price >= 690000 && input.images.length < 3) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Items over $6,900 require at least 3 photos",
+        });
+      }
+
       return ctx.db.listing.create({
         data: {
           sellerId: ctx.session.user.id,
@@ -70,6 +77,15 @@ export const listingRouter = createTRPCRouter({
         });
       }
 
+      const resolvedPrice = input.price ?? listing.price;
+      const resolvedImages = input.images ?? JSON.parse(listing.images) as string[];
+      if (resolvedPrice >= 690000 && resolvedImages.length < 3) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Items over $6,900 require at least 3 photos",
+        });
+      }
+
       const { id, images, ...rest } = input;
       return ctx.db.listing.update({
         where: { id },
@@ -110,6 +126,7 @@ export const listingRouter = createTRPCRouter({
               id: true,
               name: true,
               image: true,
+              memberNumber: true,
               profile: { select: { username: true, displayName: true } },
             },
           },
@@ -118,7 +135,26 @@ export const listingRouter = createTRPCRouter({
       if (!listing) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
-      return listing;
+
+      const vouchCount = await ctx.db.legitCheck.count({
+        where: { listingId: input.id },
+      });
+
+      const userId = ctx.session?.user?.id;
+      let userVouched = false;
+      if (userId) {
+        const existing = await ctx.db.legitCheck.findUnique({
+          where: {
+            listingId_userId: {
+              listingId: input.id,
+              userId,
+            },
+          },
+        });
+        userVouched = !!existing;
+      }
+
+      return { ...listing, vouchCount, userVouched };
     }),
 
   getMyListings: protectedProcedure
@@ -203,6 +239,7 @@ export const listingRouter = createTRPCRouter({
               id: true,
               name: true,
               image: true,
+              memberNumber: true,
               profile: { select: { username: true, displayName: true } },
             },
           },
@@ -217,4 +254,58 @@ export const listingRouter = createTRPCRouter({
 
       return { listings, nextCursor };
     }),
+
+  vouch: protectedProcedure
+    .input(z.object({ listingId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const listing = await ctx.db.listing.findUnique({
+        where: { id: input.listingId },
+      });
+      if (!listing) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      if (listing.sellerId === ctx.session.user.id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot vouch for your own listing",
+        });
+      }
+
+      const existing = await ctx.db.legitCheck.findUnique({
+        where: {
+          listingId_userId: {
+            listingId: input.listingId,
+            userId: ctx.session.user.id,
+          },
+        },
+      });
+
+      if (existing) {
+        await ctx.db.legitCheck.delete({ where: { id: existing.id } });
+        return { vouched: false };
+      } else {
+        await ctx.db.legitCheck.create({
+          data: {
+            listingId: input.listingId,
+            userId: ctx.session.user.id,
+          },
+        });
+        return { vouched: true };
+      }
+    }),
+
+  recentlySold: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.listing.findMany({
+      where: { status: "sold" },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        category: true,
+        updatedAt: true,
+      },
+    });
+  }),
 });

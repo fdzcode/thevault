@@ -71,11 +71,16 @@ model User {
     inviteCodesCreated InviteCode[] @relation("InviteCodeCreator")
     inviteCodeUsed     InviteCode?  @relation("InviteCodeRedeemer")
 
+    legitChecks     LegitCheck[] @relation("LegitCheckVoucher")
+
     listingsCreated Listing[] @relation("ListingSeller")
     ordersBought    Order[]   @relation("OrderBuyer")
     ordersSold      Order[]   @relation("OrderSeller")
     reviewsGiven    Review[]  @relation("ReviewAuthor")
     reviewsReceived Review[]  @relation("ReviewSeller")
+
+    conversationParticipants ConversationParticipant[]
+    messagesSent             Message[] @relation("MessageSender")
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -119,7 +124,9 @@ model Listing {
     tags        String   @default("") // comma-separated
     images      String   @default("[]") // JSON array of URLs
 
-    order Order?
+    order         Order?
+    legitChecks   LegitCheck[]
+    conversations Conversation[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -207,4 +214,49 @@ model InviteCode {
     usedAt   DateTime?
 
     createdAt DateTime @default(now())
+}
+
+model LegitCheck {
+    id        String   @id @default(cuid())
+    listingId String
+    listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+    userId    String
+    user      User     @relation("LegitCheckVoucher", fields: [userId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+
+    @@unique([listingId, userId])
+}
+
+model Conversation {
+    id        String   @id @default(cuid())
+    listingId String?
+    listing   Listing? @relation(fields: [listingId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    participants ConversationParticipant[]
+    messages     Message[]
+}
+
+model ConversationParticipant {
+    id             String       @id @default(cuid())
+    conversationId String
+    conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+    userId         String
+    user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt      DateTime     @default(now())
+
+    @@unique([conversationId, userId])
+}
+
+model Message {
+    id             String       @id @default(cuid())
+    conversationId String
+    conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+    senderId       String
+    sender         User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+    content        String
+    offerAmount    Int?
+    offerStatus    String? // pending, accepted, declined
+    createdAt      DateTime     @default(now())
 }

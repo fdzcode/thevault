@@ -77,6 +77,11 @@ export function CreateListingForm() {
     }
     const priceCents = Math.round(priceDollars * 100);
 
+    if (priceCents >= 690000 && images.length < 3) {
+      setError("Items over $6,900 require at least 3 photos.");
+      return;
+    }
+
     createListing.mutate({
       title,
       description,
@@ -142,6 +147,11 @@ export function CreateListingForm() {
           className={inputClass}
           placeholder="0.00"
         />
+        {parseFloat(priceStr) >= 6900 && (
+          <p className="mt-1 text-xs text-zinc-400">
+            Items over $6,900 require at least 3 photos.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">

@@ -20,7 +20,7 @@ export const profileRouter = createTRPCRouter({
       const profile = await ctx.db.profile.findUnique({
         where: { username: input.username },
         include: {
-          user: { select: { id: true, name: true, image: true } },
+          user: { select: { id: true, name: true, image: true, memberNumber: true } },
         },
       });
       if (!profile) {
@@ -92,7 +92,7 @@ export const profileRouter = createTRPCRouter({
         cursor: input.cursor ? { id: input.cursor } : undefined,
         orderBy: { createdAt: "desc" },
         include: {
-          user: { select: { id: true, name: true, image: true } },
+          user: { select: { id: true, name: true, image: true, memberNumber: true } },
         },
       });
 
