@@ -7,6 +7,7 @@ import {
 } from "~/server/api/trpc";
 import { paginateResults } from "~/server/api/paginate";
 import { validateListingForPurchase } from "~/server/services/orders";
+import { calculateFees } from "~/server/services/fees";
 
 export const messageRouter = createTRPCRouter({
   startConversation: protectedProcedure
@@ -264,12 +265,16 @@ export const messageRouter = createTRPCRouter({
           message.senderId,
         );
 
+        const fees = calculateFees(message.offerAmount);
         const order = await ctx.db.order.create({
           data: {
             listingId: listing.id,
             buyerId: message.senderId,
             sellerId: listing.sellerId,
             totalAmount: message.offerAmount,
+            platformFeeBps: fees.platformFeeBps,
+            platformFeeAmount: fees.platformFeeAmount,
+            sellerPayoutAmount: fees.sellerPayoutAmount,
             status: "pending",
           },
         });

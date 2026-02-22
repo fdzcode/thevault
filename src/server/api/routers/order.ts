@@ -6,6 +6,15 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 import { paginateResults } from "~/server/api/paginate";
+import {
+  handleOrderShipped,
+  handleDeliveryConfirmed,
+} from "~/server/services/orders";
+import {
+  assertTransition,
+  resolveRole,
+  type OrderStatus,
+} from "~/server/services/order-machine";
 
 export const orderRouter = createTRPCRouter({
   getById: protectedProcedure
@@ -194,52 +203,14 @@ export const orderRouter = createTRPCRouter({
       }
 
       const userId = ctx.session.user.id;
-      const isBuyer = order.buyerId === userId;
-      const isSeller = order.sellerId === userId;
+      const role = resolveRole(userId, order);
 
-      if (!isBuyer && !isSeller) {
+      if (!role) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
-      // Business rules
-      if (input.status === "shipped") {
-        if (!isSeller) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Only the seller can mark as shipped",
-          });
-        }
-        if (order.status !== "paid") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Can only ship paid orders",
-          });
-        }
-      }
-
-      if (input.status === "delivered") {
-        if (!isBuyer) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Only the buyer can confirm delivery",
-          });
-        }
-        if (order.status !== "shipped") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Can only confirm delivery of shipped orders",
-          });
-        }
-      }
-
-      if (input.status === "cancelled") {
-        if (order.status !== "pending") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Can only cancel pending orders",
-          });
-        }
-      }
+      // Single source of truth for transition validation
+      assertTransition(order.status as OrderStatus, input.status, role);
 
       const updatedOrder = await ctx.db.order.update({
         where: { id: input.id },
@@ -254,16 +225,14 @@ export const orderRouter = createTRPCRouter({
         },
       });
 
-      // When delivered, move funds from pending to available
-      if (input.status === "delivered") {
-        const payoutAmount = order.sellerPayoutAmount || order.totalAmount;
-        await ctx.db.sellerBalance.update({
-          where: { userId: order.sellerId },
-          data: {
-            pendingAmount: { decrement: payoutAmount },
-            availableAmount: { increment: payoutAmount },
-          },
+      // Trigger lifecycle side-effects (balance updates, emails, notifications)
+      if (input.status === "shipped") {
+        await handleOrderShipped(ctx.db, input.id, {
+          trackingNumber: input.trackingNumber,
+          shippingCarrier: input.shippingCarrier,
         });
+      } else if (input.status === "delivered") {
+        await handleDeliveryConfirmed(ctx.db, input.id);
       }
 
       return updatedOrder;

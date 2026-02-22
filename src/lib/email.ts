@@ -4,15 +4,23 @@ import {
   emailButton,
   emailDivider,
   emailDetailsTable,
+  escapeHtml,
 } from "./email-templates";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = "The Vault <noreply@thevault.app>";
 const BASE_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
+let _resend: Resend | null = null;
+function getResend(): Resend | null {
+  if (!process.env.RESEND_API_KEY) return null;
+  _resend ??= new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
+
 // Helper that silently fails if no API key configured
 async function sendEmail(opts: { to: string; subject: string; html: string }) {
-  if (!process.env.RESEND_API_KEY) {
+  const resend = getResend();
+  if (!resend) {
     console.log(`[Email] Skipping (no API key): ${opts.subject} -> ${opts.to}`);
     return;
   }
@@ -225,7 +233,7 @@ export async function sendNewMessageEmail(
   const html = emailWrapper(`
     <h2 style="color:#ffffff;font-size:20px;font-weight:700;margin:0 0 8px;">New Message</h2>
     <p style="color:#a1a1aa;font-size:14px;margin:0 0 16px;">
-      You have a new message from <strong style="color:#ffffff;">${senderName}</strong>${listingTitle ? ` about <strong style="color:#ffffff;">${listingTitle}</strong>` : ""}.
+      You have a new message from <strong style="color:#ffffff;">${escapeHtml(senderName)}</strong>${listingTitle ? ` about <strong style="color:#ffffff;">${escapeHtml(listingTitle)}</strong>` : ""}.
     </p>
     ${emailDivider()}
     <p style="color:#a1a1aa;font-size:13px;margin:0;">
@@ -276,7 +284,7 @@ export async function sendDisputeOpenedEmail(
     ${emailDivider()}
     <div style="background-color:#27272a;border-radius:6px;padding:12px;margin:12px 0;">
       <p style="color:#a1a1aa;font-size:12px;margin:0 0 4px;font-weight:600;">Description:</p>
-      <p style="color:#d4d4d8;font-size:13px;margin:0;">${description}</p>
+      <p style="color:#d4d4d8;font-size:13px;margin:0;">${escapeHtml(description)}</p>
     </div>
     <p style="color:#a1a1aa;font-size:13px;margin:0;">
       You can view the dispute details and respond from the order page.
@@ -323,7 +331,7 @@ export async function sendDisputeResolvedEmail(
     ${emailDivider()}
     <div style="background-color:#27272a;border-radius:6px;padding:12px;margin:12px 0;">
       <p style="color:#a1a1aa;font-size:12px;margin:0 0 4px;font-weight:600;">Resolution Details:</p>
-      <p style="color:#d4d4d8;font-size:13px;margin:0;">${resolution}</p>
+      <p style="color:#d4d4d8;font-size:13px;margin:0;">${escapeHtml(resolution)}</p>
     </div>` : ""}
     <p style="color:#a1a1aa;font-size:13px;margin:0;">
       If you have further questions, please contact our support team.
@@ -352,7 +360,7 @@ export async function sendWelcomeEmail(to: string, memberNumber: string) {
     ${emailDivider()}
     <div style="text-align:center;padding:16px 0;">
       <p style="color:#71717a;font-size:12px;margin:0 0 4px;text-transform:uppercase;letter-spacing:1px;">Your Member Number</p>
-      <p style="color:#ffffff;font-size:32px;font-weight:800;margin:0;letter-spacing:2px;">#${memberNumber}</p>
+      <p style="color:#ffffff;font-size:32px;font-weight:800;margin:0;letter-spacing:2px;">#${escapeHtml(memberNumber)}</p>
     </div>
     ${emailDivider()}
     <p style="color:#a1a1aa;font-size:14px;margin:0 0 8px;">Here is what you can do on The Vault:</p>

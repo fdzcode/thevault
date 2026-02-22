@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "~/lib/stripe";
 import { db } from "~/server/db";
+import { handlePaymentConfirmed } from "~/server/services/orders";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -11,13 +12,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
 
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error("STRIPE_WEBHOOK_SECRET is not configured");
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
   let event: Stripe.Event;
   try {
-    event = getStripe().webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!,
-    );
+    event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error(`Webhook signature verification failed: ${message}`);
@@ -31,9 +34,12 @@ export async function POST(req: NextRequest) {
       const listingId = session.metadata?.listingId;
 
       if (orderId && listingId) {
-        await db.$transaction([
-          db.order.update({
-            where: { id: orderId },
+        // Use updateMany with a status precondition so duplicate webhook
+        // deliveries (documented by Stripe) are no-ops instead of
+        // double-crediting the seller's balance.
+        const [updated] = await db.$transaction([
+          db.order.updateMany({
+            where: { id: orderId, status: "pending" },
             data: {
               status: "paid",
               paymentIntentId:
@@ -48,26 +54,8 @@ export async function POST(req: NextRequest) {
           }),
         ]);
 
-        // Credit seller balance with payout amount
-        const order = await db.order.findUnique({
-          where: { id: orderId },
-        });
-
-        if (order) {
-          const payoutAmount = order.sellerPayoutAmount || order.totalAmount;
-          await db.sellerBalance.upsert({
-            where: { userId: order.sellerId },
-            create: {
-              userId: order.sellerId,
-              pendingAmount: payoutAmount,
-              availableAmount: 0,
-              totalEarned: payoutAmount,
-            },
-            update: {
-              pendingAmount: { increment: payoutAmount },
-              totalEarned: { increment: payoutAmount },
-            },
-          });
+        if (updated.count > 0) {
+          await handlePaymentConfirmed(db, orderId);
         }
       }
       break;
@@ -78,8 +66,8 @@ export async function POST(req: NextRequest) {
       const orderId = session.metadata?.orderId;
 
       if (orderId) {
-        await db.order.update({
-          where: { id: orderId },
+        await db.order.updateMany({
+          where: { id: orderId, status: "pending" },
           data: { status: "cancelled" },
         });
       }

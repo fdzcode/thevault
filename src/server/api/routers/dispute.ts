@@ -5,6 +5,11 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
+import { paginateResults } from "~/server/api/paginate";
+import {
+  assertTransition,
+  type OrderStatus,
+} from "~/server/services/order-machine";
 
 const disputeReasonEnum = z.enum([
   "item_not_received",
@@ -34,7 +39,7 @@ export const disputeRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
       }
 
-      // Only buyer can file a dispute
+      // Only buyer can file a dispute; order must be in a disputable state
       if (order.buyerId !== userId) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -42,13 +47,7 @@ export const disputeRouter = createTRPCRouter({
         });
       }
 
-      // Order must be paid or shipped
-      if (order.status !== "paid" && order.status !== "shipped") {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Can only file disputes for paid or shipped orders",
-        });
-      }
+      assertTransition(order.status as OrderStatus, "disputed", "buyer");
 
       // Check if dispute already exists
       if (order.dispute) {
@@ -58,15 +57,23 @@ export const disputeRouter = createTRPCRouter({
         });
       }
 
-      return ctx.db.dispute.create({
-        data: {
-          orderId: order.id,
-          filerId: userId,
-          againstId: order.sellerId,
-          reason: input.reason,
-          description: input.description,
-        },
-      });
+      const [dispute] = await ctx.db.$transaction([
+        ctx.db.dispute.create({
+          data: {
+            orderId: order.id,
+            filerId: userId,
+            againstId: order.sellerId,
+            reason: input.reason,
+            description: input.description,
+          },
+        }),
+        ctx.db.order.update({
+          where: { id: order.id },
+          data: { status: "disputed" },
+        }),
+      ]);
+
+      return dispute;
     }),
 
   getMyDisputes: protectedProcedure
@@ -111,13 +118,8 @@ export const disputeRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (disputes.length > input.limit) {
-        const next = disputes.pop();
-        nextCursor = next?.id;
-      }
-
-      return { disputes, nextCursor };
+      const { items, nextCursor } = paginateResults(disputes, input.limit);
+      return { disputes: items, nextCursor };
     }),
 
   getById: protectedProcedure

@@ -5,6 +5,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
+import { paginateResults } from "~/server/api/paginate";
 
 export const payoutRouter = createTRPCRouter({
   getBalance: protectedProcedure.query(async ({ ctx }) => {
@@ -86,12 +87,7 @@ export const payoutRouter = createTRPCRouter({
         orderBy: { createdAt: "desc" },
       });
 
-      let nextCursor: string | undefined;
-      if (requests.length > input.limit) {
-        const next = requests.pop();
-        nextCursor = next?.id;
-      }
-
-      return { requests, nextCursor };
+      const { items, nextCursor } = paginateResults(requests, input.limit);
+      return { requests: items, nextCursor };
     }),
 });
