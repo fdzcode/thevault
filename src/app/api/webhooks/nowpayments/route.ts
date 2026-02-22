@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         where: { id: order_id },
       });
 
-      if (order && order.status === "pending") {
+      if (order?.status === "pending") {
         await db.$transaction([
           db.order.update({
             where: { id: order_id },
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         where: { id: order_id },
       });
 
-      if (order && order.status === "pending") {
+      if (order?.status === "pending") {
         await db.order.update({
           where: { id: order_id },
           data: { status: "cancelled" },

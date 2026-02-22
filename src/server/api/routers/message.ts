@@ -5,6 +5,8 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
+import { paginateResults } from "~/server/api/paginate";
+import { validateListingForPurchase } from "~/server/services/orders";
 
 export const messageRouter = createTRPCRouter({
   startConversation: protectedProcedure
@@ -81,7 +83,7 @@ export const messageRouter = createTRPCRouter({
 
       const conversationIds = participations.map((p) => p.conversationId);
 
-      const conversations = await ctx.db.conversation.findMany({
+      const results = await ctx.db.conversation.findMany({
         where: { id: { in: conversationIds } },
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
@@ -109,12 +111,7 @@ export const messageRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (conversations.length > input.limit) {
-        const next = conversations.pop();
-        nextCursor = next?.id;
-      }
-
+      const { items: conversations, nextCursor } = paginateResults(results, input.limit);
       return { conversations, nextCursor };
     }),
 
@@ -142,7 +139,7 @@ export const messageRouter = createTRPCRouter({
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
-      const messages = await ctx.db.message.findMany({
+      const results = await ctx.db.message.findMany({
         where: { conversationId: input.conversationId },
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
@@ -158,12 +155,7 @@ export const messageRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (messages.length > input.limit) {
-        const next = messages.pop();
-        nextCursor = next?.id;
-      }
-
+      const { items: messages, nextCursor } = paginateResults(results, input.limit);
       return { messages, nextCursor };
     }),
 
@@ -264,17 +256,13 @@ export const messageRouter = createTRPCRouter({
       // If accepted and conversation has a listing, create a pending order
       if (
         input.action === "accepted" &&
-        message.conversation.listingId &&
-        message.conversation.listing
+        message.conversation.listingId
       ) {
-        const listing = message.conversation.listing;
-
-        if (listing.status !== "active") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Listing is no longer active",
-          });
-        }
+        const listing = await validateListingForPurchase(
+          ctx.db,
+          message.conversation.listingId,
+          message.senderId,
+        );
 
         const order = await ctx.db.order.create({
           data: {

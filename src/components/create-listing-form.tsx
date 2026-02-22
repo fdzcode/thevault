@@ -3,6 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import {
+  inputClass,
+  labelClass,
+  HIGH_VALUE_THRESHOLD_CENTS,
+  HIGH_VALUE_MIN_PHOTOS,
+} from "~/lib/constants";
 
 const CATEGORIES = [
   { value: "apparel", label: "Apparel" },
@@ -77,8 +83,8 @@ export function CreateListingForm() {
     }
     const priceCents = Math.round(priceDollars * 100);
 
-    if (priceCents >= 690000 && images.length < 3) {
-      setError("Items over $6,900 require at least 3 photos.");
+    if (priceCents >= HIGH_VALUE_THRESHOLD_CENTS && images.length < HIGH_VALUE_MIN_PHOTOS) {
+      setError(`Items over $${(HIGH_VALUE_THRESHOLD_CENTS / 100).toLocaleString()} require at least ${HIGH_VALUE_MIN_PHOTOS} photos.`);
       return;
     }
 
@@ -92,10 +98,6 @@ export function CreateListingForm() {
       images,
     });
   };
-
-  const inputClass =
-    "mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-zinc-300";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -147,9 +149,9 @@ export function CreateListingForm() {
           className={inputClass}
           placeholder="0.00"
         />
-        {parseFloat(priceStr) >= 6900 && (
+        {parseFloat(priceStr) >= HIGH_VALUE_THRESHOLD_CENTS / 100 && (
           <p className="mt-1 text-xs text-zinc-400">
-            Items over $6,900 require at least 3 photos.
+            Items over ${(HIGH_VALUE_THRESHOLD_CENTS / 100).toLocaleString()} require at least {HIGH_VALUE_MIN_PHOTOS} photos.
           </p>
         )}
       </div>

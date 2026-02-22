@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { OrderActions } from "~/components/order-actions";
+import { PaymentMethodBadge } from "~/components/ui/status-badge";
 
 export default async function OrderDetailPage({
   params,
@@ -29,15 +30,7 @@ export default async function OrderDetailPage({
       <h1 className="mb-2 text-2xl font-bold">Order {order.id}</h1>
       <div className="mb-4 flex items-center gap-3">
         <p className="text-sm text-zinc-400">Status: {order.status}</p>
-        <span
-          className={`rounded px-2 py-0.5 text-xs font-medium ${
-            order.paymentMethod === "crypto"
-              ? "bg-purple-900/50 text-purple-300"
-              : "bg-blue-900/50 text-blue-300"
-          }`}
-        >
-          {order.paymentMethod === "crypto" ? "Crypto" : "Stripe"}
-        </span>
+        <PaymentMethodBadge method={order.paymentMethod} />
       </div>
       <div className="rounded border border-zinc-800 p-4">
         <h2 className="font-semibold">{order.listing.title}</h2>

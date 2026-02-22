@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import {
@@ -8,6 +7,10 @@ import {
 import { getStripe } from "~/lib/stripe";
 import { createInvoice } from "~/lib/nowpayments";
 import { shippingAddressSchema } from "~/lib/validators";
+import {
+  validateListingForPurchase,
+  createOrderWithShipping,
+} from "~/server/services/orders";
 
 const checkoutInput = z.object({
   listingId: z.string(),
@@ -18,46 +21,21 @@ export const paymentRouter = createTRPCRouter({
   createCheckoutSession: protectedProcedure
     .input(checkoutInput)
     .mutation(async ({ ctx, input }) => {
-      const listing = await ctx.db.listing.findUnique({
-        where: { id: input.listingId },
-        include: { seller: true },
+      const listing = await validateListingForPurchase(
+        ctx.db,
+        input.listingId,
+        ctx.session.user.id,
+      );
+
+      const order = await createOrderWithShipping(ctx.db, {
+        listingId: listing.id,
+        buyerId: ctx.session.user.id,
+        sellerId: listing.sellerId,
+        totalAmount: listing.price,
+        shippingAddress: input.shippingAddress,
+        paymentMethod: "stripe",
       });
 
-      if (!listing) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found" });
-      }
-      if (listing.status !== "active") {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Listing is no longer available",
-        });
-      }
-      if (listing.sellerId === ctx.session.user.id) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Cannot purchase your own listing",
-        });
-      }
-
-      // Create shipping address
-      const shippingAddr = await ctx.db.shippingAddress.create({
-        data: input.shippingAddress,
-      });
-
-      // Create pending order
-      const order = await ctx.db.order.create({
-        data: {
-          listingId: listing.id,
-          buyerId: ctx.session.user.id,
-          sellerId: listing.sellerId,
-          totalAmount: listing.price,
-          shippingAddressId: shippingAddr.id,
-          status: "pending",
-          paymentMethod: "stripe",
-        },
-      });
-
-      // Create Stripe Checkout Session
       const session = await getStripe().checkout.sessions.create({
         mode: "payment",
         line_items: [
@@ -81,7 +59,6 @@ export const paymentRouter = createTRPCRouter({
         cancel_url: `${process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? "" : "http://localhost:3000"}/listings/${listing.id}?cancelled=true`,
       });
 
-      // Store checkout session ID on order
       await ctx.db.order.update({
         where: { id: order.id },
         data: { checkoutSessionId: session.id },
@@ -93,51 +70,26 @@ export const paymentRouter = createTRPCRouter({
   createCryptoCheckoutSession: protectedProcedure
     .input(checkoutInput)
     .mutation(async ({ ctx, input }) => {
-      const listing = await ctx.db.listing.findUnique({
-        where: { id: input.listingId },
-        include: { seller: true },
+      const listing = await validateListingForPurchase(
+        ctx.db,
+        input.listingId,
+        ctx.session.user.id,
+      );
+
+      const order = await createOrderWithShipping(ctx.db, {
+        listingId: listing.id,
+        buyerId: ctx.session.user.id,
+        sellerId: listing.sellerId,
+        totalAmount: listing.price,
+        shippingAddress: input.shippingAddress,
+        paymentMethod: "crypto",
       });
 
-      if (!listing) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Listing not found" });
-      }
-      if (listing.status !== "active") {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Listing is no longer available",
-        });
-      }
-      if (listing.sellerId === ctx.session.user.id) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Cannot purchase your own listing",
-        });
-      }
-
-      // Create shipping address
-      const shippingAddr = await ctx.db.shippingAddress.create({
-        data: input.shippingAddress,
-      });
-
-      // Create pending order with crypto payment method
-      const order = await ctx.db.order.create({
-        data: {
-          listingId: listing.id,
-          buyerId: ctx.session.user.id,
-          sellerId: listing.sellerId,
-          totalAmount: listing.price,
-          shippingAddressId: shippingAddr.id,
-          status: "pending",
-          paymentMethod: "crypto",
-        },
-      });
-
-      // Create NOWPayments invoice
       const baseUrl =
         process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
       const invoice = await createInvoice({
-        priceAmount: listing.price / 100, // convert cents to dollars
+        priceAmount: listing.price / 100,
         orderId: order.id,
         orderDescription: listing.title,
         ipnCallbackUrl: `${baseUrl}/api/webhooks/nowpayments`,
@@ -145,7 +97,6 @@ export const paymentRouter = createTRPCRouter({
         cancelUrl: `${baseUrl}/listings/${listing.id}?cancelled=true`,
       });
 
-      // Store crypto payment ID on order
       await ctx.db.order.update({
         where: { id: order.id },
         data: { cryptoPaymentId: invoice.id },

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
+import { OrderStatusBadge } from "~/components/ui/status-badge";
 
 export default async function SalesPage() {
   const session = await auth();
@@ -35,21 +36,7 @@ export default async function SalesPage() {
               >
                 <div className="flex items-center justify-between">
                   <h2 className="font-semibold">{order.listing.title}</h2>
-                  <span
-                    className={`rounded px-2 py-0.5 text-xs font-medium ${
-                      order.status === "paid"
-                        ? "bg-yellow-400/10 text-yellow-400"
-                        : order.status === "shipped"
-                          ? "bg-blue-400/10 text-blue-400"
-                          : order.status === "delivered"
-                            ? "bg-green-400/10 text-green-400"
-                            : order.status === "cancelled"
-                              ? "bg-red-400/10 text-red-400"
-                              : "bg-zinc-400/10 text-zinc-400"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
+                  <OrderStatusBadge status={order.status} />
                 </div>
                 <p className="mt-1 text-sm text-zinc-400">
                   ${(order.totalAmount / 100).toFixed(2)} &middot; Buyer:{" "}
