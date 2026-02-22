@@ -55,7 +55,7 @@ model User {
     image         String?
     password      String?
     memberNumber  String?   @unique
-    role          String    @default("user") // user, admin
+    role          String    @default("member") // "admin" | "moderator" | "member"
 
     // Referral tree
     invitedById String?
@@ -64,6 +64,7 @@ model User {
 
     stripeCustomerId       String? @unique
     stripeConnectAccountId String? @unique
+    stripeConnectStatus    String? // "onboarding" | "pending_verification" | "active" | "restricted" | "disabled"
 
     accounts Account[]
     sessions Session[]
@@ -79,6 +80,8 @@ model User {
     ordersSold      Order[]   @relation("OrderSeller")
     reviewsGiven    Review[]  @relation("ReviewAuthor")
     reviewsReceived Review[]  @relation("ReviewSeller")
+
+    notifications    Notification[]
 
     conversationParticipants ConversationParticipant[]
     messagesSent             Message[] @relation("MessageSender")
@@ -154,12 +157,14 @@ model Order {
     sellerId  String
     seller    User   @relation("OrderSeller", fields: [sellerId], references: [id])
 
-    status String @default("pending") // pending, paid, shipped, delivered, cancelled
+    status String @default("pending") // pending, paid, shipped, delivered, disputed, refunded, cancelled
 
     paymentMethod         String  @default("stripe") // "stripe" | "crypto"
     totalAmount           Int // cents
-    platformFee           Int     @default(0) // cents - platform commission
-    sellerPayout          Int     @default(0) // cents - amount seller receives
+    platformFeeBps        Int     @default(0) // fee rate in basis points at time of order
+    platformFeeAmount     Int     @default(0) // computed fee in cents
+    sellerPayoutAmount    Int     @default(0) // totalAmount minus fee
+    stripeTransferId      String? // Connect transfer ID for seller payout
     stripePriceId         String?
     paymentIntentId       String?
     checkoutSessionId     String?
@@ -212,6 +217,23 @@ model Review {
     updatedAt DateTime @updatedAt
 
     @@index([sellerId])
+}
+
+model Notification {
+    id       String  @id @default(cuid())
+    userId   String
+    user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    type     String // order_paid, order_shipped, order_delivered, dispute_opened, dispute_resolved, payout_sent, connect_onboarding
+    title    String
+    body     String
+    link     String?
+    read     Boolean @default(false)
+    metadata String  @default("{}") // JSON string
+
+    createdAt DateTime @default(now())
+
+    @@index([userId, read])
+    @@index([userId, createdAt])
 }
 
 model InviteCode {

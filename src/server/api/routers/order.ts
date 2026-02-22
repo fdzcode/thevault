@@ -5,6 +5,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
+import { paginateResults } from "~/server/api/paginate";
 
 export const orderRouter = createTRPCRouter({
   getById: protectedProcedure
@@ -67,7 +68,7 @@ export const orderRouter = createTRPCRouter({
 
       if (input.status) where.status = input.status;
 
-      const orders = await ctx.db.order.findMany({
+      const results = await ctx.db.order.findMany({
         where,
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
@@ -83,12 +84,7 @@ export const orderRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (orders.length > input.limit) {
-        const next = orders.pop();
-        nextCursor = next?.id;
-      }
-
+      const { items: orders, nextCursor } = paginateResults(results, input.limit);
       return { orders, nextCursor };
     }),
 

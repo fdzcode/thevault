@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
+import { inputClass, labelClass } from "~/lib/constants";
 
 type PaymentMethod = "stripe" | "crypto";
 
@@ -72,10 +73,6 @@ export function BuyButton({ listingId }: { listingId: string }) {
       createStripeCheckout.mutate(payload);
     }
   };
-
-  const inputClass =
-    "mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none";
-  const labelClass = "block text-sm font-medium text-zinc-300";
 
   if (!showForm) {
     return (

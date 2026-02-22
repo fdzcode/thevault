@@ -4,6 +4,7 @@ import Link from "next/link";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { OrderActions } from "~/components/order-actions";
+import { PaymentMethodBadge } from "~/components/ui/status-badge";
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -116,19 +117,19 @@ export default async function OrderDetailPage({
                   ${(order.totalAmount / 100).toFixed(2)}
                 </span>
               </div>
-              {order.platformFee > 0 && (
+              {order.platformFeeAmount > 0 && (
                 <div className="flex justify-between">
                   <span className="text-zinc-400">Platform Fee</span>
                   <span className="text-zinc-500">
-                    -${(order.platformFee / 100).toFixed(2)}
+                    -${(order.platformFeeAmount / 100).toFixed(2)}
                   </span>
                 </div>
               )}
-              {order.sellerPayout > 0 && (
+              {order.sellerPayoutAmount > 0 && (
                 <div className="flex justify-between border-t border-zinc-800 pt-2">
                   <span className="text-zinc-400">Seller Receives</span>
                   <span className="font-medium text-green-400">
-                    ${(order.sellerPayout / 100).toFixed(2)}
+                    ${(order.sellerPayoutAmount / 100).toFixed(2)}
                   </span>
                 </div>
               )}

@@ -6,6 +6,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import { paginateResults } from "~/server/api/paginate";
 
 export const profileRouter = createTRPCRouter({
   getMyProfile: protectedProcedure.query(async ({ ctx }) => {
@@ -79,7 +80,7 @@ export const profileRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const profiles = await ctx.db.profile.findMany({
+      const results = await ctx.db.profile.findMany({
         where: input.query
           ? {
               OR: [
@@ -96,12 +97,7 @@ export const profileRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (profiles.length > input.limit) {
-        const next = profiles.pop();
-        nextCursor = next?.id;
-      }
-
+      const { items: profiles, nextCursor } = paginateResults(results, input.limit);
       return { profiles, nextCursor };
     }),
 

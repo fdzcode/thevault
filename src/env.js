@@ -16,6 +16,7 @@ export const env = createEnv({
     NOWPAYMENTS_API_KEY: z.string().optional(),
     NOWPAYMENTS_IPN_SECRET: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
+    STRIPE_CONNECT_WEBHOOK_SECRET: z.string().optional(),
   },
 
   client: {
@@ -31,6 +32,7 @@ export const env = createEnv({
     NOWPAYMENTS_API_KEY: process.env.NOWPAYMENTS_API_KEY,
     NOWPAYMENTS_IPN_SECRET: process.env.NOWPAYMENTS_IPN_SECRET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+    STRIPE_CONNECT_WEBHOOK_SECRET: process.env.STRIPE_CONNECT_WEBHOOK_SECRET,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   },

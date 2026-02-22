@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
+import { inputClass } from "~/lib/constants";
 
 const CARRIERS = [
   { value: "usps", label: "USPS" },
@@ -79,9 +80,6 @@ export function OrderActions({
     },
   });
 
-  const inputClass =
-    "mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none";
-
   const selectClass =
     "mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-white focus:border-zinc-500 focus:outline-none";
 
@@ -92,6 +90,7 @@ export function OrderActions({
 
   const carrierLabel =
     CARRIERS.find((c) => c.value === existingCarrier)?.label ?? existingCarrier;
+
 
   return (
     <div className="mt-6 space-y-4">

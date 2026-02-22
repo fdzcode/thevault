@@ -6,6 +6,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import { paginateResults } from "~/server/api/paginate";
 import {
   categoryEnum,
   conditionEnum,
@@ -167,7 +168,7 @@ export const listingRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const listings = await ctx.db.listing.findMany({
+      const results = await ctx.db.listing.findMany({
         where: {
           sellerId: ctx.session.user.id,
           ...(input.status ? { status: input.status } : {}),
@@ -177,12 +178,7 @@ export const listingRouter = createTRPCRouter({
         orderBy: { createdAt: "desc" },
       });
 
-      let nextCursor: string | undefined;
-      if (listings.length > input.limit) {
-        const next = listings.pop();
-        nextCursor = next?.id;
-      }
-
+      const { items: listings, nextCursor } = paginateResults(results, input.limit);
       return { listings, nextCursor };
     }),
 
@@ -229,7 +225,7 @@ export const listingRouter = createTRPCRouter({
               ? { createdAt: "asc" as const }
               : { createdAt: "desc" as const };
 
-      const listings = await ctx.db.listing.findMany({
+      const results = await ctx.db.listing.findMany({
         where,
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
@@ -247,12 +243,7 @@ export const listingRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (listings.length > input.limit) {
-        const next = listings.pop();
-        nextCursor = next?.id;
-      }
-
+      const { items: listings, nextCursor } = paginateResults(results, input.limit);
       return { listings, nextCursor };
     }),
 

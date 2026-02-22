@@ -131,3 +131,17 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.session.user.role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+  }
+  return next({ ctx });
+});
+
+export const moderatorProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.session.user.role !== "admin" && ctx.session.user.role !== "moderator") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Moderator access required" });
+  }
+  return next({ ctx });
+});

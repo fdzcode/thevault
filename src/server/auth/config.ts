@@ -10,6 +10,7 @@ declare module "next-auth" {
     user: {
       id: string;
       memberNumber: string | null;
+      role: string;
     } & DefaultSession["user"];
   }
 }
@@ -42,6 +43,7 @@ export const authConfig = {
           email: user.email,
           name: user.name,
           memberNumber: user.memberNumber,
+          role: user.role,
         };
       },
     }),
@@ -55,6 +57,8 @@ export const authConfig = {
         token.id = user.id;
         token.memberNumber =
           (user as { memberNumber?: string | null }).memberNumber ?? null;
+        token.role =
+          (user as { role?: string }).role ?? "member";
       }
       return token;
     },
@@ -64,6 +68,7 @@ export const authConfig = {
         ...session.user,
         id: token.id as string,
         memberNumber: (token.memberNumber as string) ?? null,
+        role: (token.role as string) ?? "member",
       },
     }),
   },
