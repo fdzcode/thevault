@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 
+type PaymentMethod = "stripe" | "crypto";
+
 export function BuyButton({ listingId }: { listingId: string }) {
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("stripe");
 
   const [fullName, setFullName] = useState("");
   const [line1, setLine1] = useState("");
@@ -15,7 +18,7 @@ export function BuyButton({ listingId }: { listingId: string }) {
   const [postalCode, setPostalCode] = useState("");
   const [country, setCountry] = useState("US");
 
-  const createCheckout = api.payment.createCheckoutSession.useMutation({
+  const createStripeCheckout = api.payment.createCheckoutSession.useMutation({
     onSuccess: (result) => {
       if (result.url) {
         window.location.href = result.url;
@@ -26,10 +29,26 @@ export function BuyButton({ listingId }: { listingId: string }) {
     },
   });
 
+  const createCryptoCheckout =
+    api.payment.createCryptoCheckoutSession.useMutation({
+      onSuccess: (result) => {
+        if (result.url) {
+          window.location.href = result.url;
+        }
+      },
+      onError: (err) => {
+        setError(err.message);
+      },
+    });
+
+  const isPending =
+    createStripeCheckout.isPending || createCryptoCheckout.isPending;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    createCheckout.mutate({
+
+    const payload = {
       listingId,
       shippingAddress: {
         fullName,
@@ -40,7 +59,13 @@ export function BuyButton({ listingId }: { listingId: string }) {
         postalCode,
         country,
       },
-    });
+    };
+
+    if (paymentMethod === "crypto") {
+      createCryptoCheckout.mutate(payload);
+    } else {
+      createStripeCheckout.mutate(payload);
+    }
   };
 
   const inputClass =
@@ -60,6 +85,32 @@ export function BuyButton({ listingId }: { listingId: string }) {
 
   return (
     <div className="mt-4 rounded border border-zinc-800 p-4">
+      {/* Payment method toggle */}
+      <div className="mb-4 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setPaymentMethod("stripe")}
+          className={`rounded px-4 py-2 text-sm font-medium transition ${
+            paymentMethod === "stripe"
+              ? "bg-white text-black"
+              : "border border-zinc-700 text-zinc-400 hover:text-zinc-200"
+          }`}
+        >
+          Pay with Card
+        </button>
+        <button
+          type="button"
+          onClick={() => setPaymentMethod("crypto")}
+          className={`rounded px-4 py-2 text-sm font-medium transition ${
+            paymentMethod === "crypto"
+              ? "bg-white text-black"
+              : "border border-zinc-700 text-zinc-400 hover:text-zinc-200"
+          }`}
+        >
+          Pay with Crypto
+        </button>
+      </div>
+
       <h3 className="mb-4 text-lg font-semibold">Shipping Address</h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
@@ -162,10 +213,10 @@ export function BuyButton({ listingId }: { listingId: string }) {
         <div className="flex gap-3">
           <button
             type="submit"
-            disabled={createCheckout.isPending}
+            disabled={isPending}
             className="rounded bg-white px-6 py-2 font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
           >
-            {createCheckout.isPending ? "Processing..." : "Proceed to Checkout"}
+            {isPending ? "Processing..." : "Proceed to Checkout"}
           </button>
           <button
             type="button"

@@ -140,10 +140,13 @@ model Order {
 
     status String @default("pending") // pending, paid, shipped, delivered, cancelled
 
-    totalAmount    Int // cents
-    stripePriceId  String?
-    paymentIntentId String?
-    checkoutSessionId String?
+    paymentMethod         String  @default("stripe") // "stripe" | "crypto"
+    totalAmount           Int // cents
+    stripePriceId         String?
+    paymentIntentId       String?
+    checkoutSessionId     String?
+    cryptoPaymentId       String? // NOWPayments invoice/payment ID
+    cryptoTransactionHash String? // blockchain transaction hash
 
     shippingAddressId String?
     shippingAddress   ShippingAddress? @relation(fields: [shippingAddressId], references: [id])

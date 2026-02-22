@@ -27,7 +27,18 @@ export default async function OrderDetailPage({
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-2 text-2xl font-bold">Order {order.id}</h1>
-      <p className="mb-4 text-sm text-zinc-400">Status: {order.status}</p>
+      <div className="mb-4 flex items-center gap-3">
+        <p className="text-sm text-zinc-400">Status: {order.status}</p>
+        <span
+          className={`rounded px-2 py-0.5 text-xs font-medium ${
+            order.paymentMethod === "crypto"
+              ? "bg-purple-900/50 text-purple-300"
+              : "bg-blue-900/50 text-blue-300"
+          }`}
+        >
+          {order.paymentMethod === "crypto" ? "Crypto" : "Stripe"}
+        </span>
+      </div>
       <div className="rounded border border-zinc-800 p-4">
         <h2 className="font-semibold">{order.listing.title}</h2>
         <p className="text-sm text-zinc-400">
@@ -42,6 +53,12 @@ export default async function OrderDetailPage({
         {order.trackingNumber && (
           <p className="mt-2 text-sm text-zinc-500">
             Tracking: {order.trackingNumber}
+          </p>
+        )}
+        {order.cryptoTransactionHash && (
+          <p className="mt-2 text-sm text-zinc-500">
+            Tx Hash: {order.cryptoTransactionHash.slice(0, 12)}...
+            {order.cryptoTransactionHash.slice(-8)}
           </p>
         )}
       </div>
