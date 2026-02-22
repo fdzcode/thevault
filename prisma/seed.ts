@@ -4,22 +4,12 @@ import bcrypt from "bcryptjs";
 const db = new PrismaClient();
 
 async function main() {
-  // Clear existing data
-  await db.notification.deleteMany();
-  await db.dispute.deleteMany();
-  await db.message.deleteMany();
-  await db.conversationParticipant.deleteMany();
-  await db.conversation.deleteMany();
-  await db.legitCheck.deleteMany();
-  await db.review.deleteMany();
-  await db.order.deleteMany();
-  await db.shippingAddress.deleteMany();
-  await db.listing.deleteMany();
-  await db.inviteCode.deleteMany();
-  await db.profile.deleteMany();
-  await db.session.deleteMany();
-  await db.account.deleteMany();
-  await db.user.deleteMany();
+  // Check if data has already been seeded
+  const existingUsers = await db.user.count();
+  if (existingUsers > 0) {
+    console.log("Database already seeded — skipping.");
+    return;
+  }
 
   const hash = await bcrypt.hash("password123", 10);
 
@@ -148,6 +138,7 @@ async function main() {
       price: 28500,
       category: "jewelry",
       condition: "new",
+      listingType: "for_sale",
       tags: "silver, handmade, chain, necklace, one of one",
       images: JSON.stringify([
         "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=800",
@@ -165,6 +156,7 @@ async function main() {
       price: 15000,
       category: "footwear",
       condition: "new",
+      listingType: "both",
       tags: "nike, dunk, panda, deadstock, size 10",
       images: JSON.stringify([
         "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=800",
@@ -182,6 +174,7 @@ async function main() {
       price: 7500,
       category: "prints",
       condition: "new",
+      listingType: "for_sale",
       tags: "screen print, limited edition, art, neon, signed",
       images: JSON.stringify([
         "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800",
@@ -198,6 +191,7 @@ async function main() {
       price: 22000,
       category: "apparel",
       condition: "good",
+      listingType: "trade",
       tags: "stussy, vintage, 90s, streetwear, tee, grail",
       images: JSON.stringify([
         "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800",
@@ -215,6 +209,7 @@ async function main() {
       price: 45000,
       category: "footwear",
       condition: "new",
+      listingType: "for_sale",
       tags: "nike, air force 1, custom, hand painted, one of one",
       images: JSON.stringify([
         "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800",
@@ -233,6 +228,7 @@ async function main() {
       price: 19500,
       category: "jewelry",
       condition: "new",
+      listingType: "both",
       tags: "brass, turquoise, cuff, bracelet, handmade",
       images: JSON.stringify([
         "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=800",
@@ -249,6 +245,7 @@ async function main() {
       price: 68000,
       category: "apparel",
       condition: "like_new",
+      listingType: "trade",
       tags: "supreme, box logo, bogo, hoodie, fw17",
       images: JSON.stringify([
         "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800",
@@ -265,9 +262,357 @@ async function main() {
       price: 3500,
       category: "collectibles",
       condition: "new",
+      listingType: "for_sale",
       tags: "ceramic, incense, handmade, pottery",
       images: JSON.stringify([
         "https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=800",
+      ]),
+    },
+  });
+
+  // ── Additional Listings ────────────────────────────────────────────
+
+  const listing9 = await db.listing.create({
+    data: {
+      sellerId: admin.id,
+      title: "Nike SB Dunk Low 'Travis Scott' Size 11",
+      description:
+        "Deadstock, never worn. Comes with original box, extra laces, and special packaging. One of the most sought-after SB collabs of the decade.",
+      price: 135000,
+      category: "footwear",
+      condition: "new",
+      listingType: "for_sale",
+      tags: "nike, sb, dunk, travis scott, cactus jack, deadstock, size 11, grail",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?w=800",
+        "https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: maya.id,
+      title: "Gold-Filled Signet Ring — Custom Engraving",
+      description:
+        "14k gold-filled signet ring. Can be customized with initials or a small symbol. Sizes 5-12 available. Allow 5-7 days for engraving.",
+      price: 16500,
+      category: "jewelry",
+      condition: "new",
+      listingType: "for_sale",
+      tags: "gold, signet, ring, custom, engraving, personalized",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800",
+        "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: jordan.id,
+      title: "New Balance 550 'White Green' Size 9",
+      description:
+        "Worn twice, practically brand new. No creasing on the toe box. Original box included. Classic colorway that goes with everything.",
+      price: 11000,
+      category: "footwear",
+      condition: "like_new",
+      listingType: "both",
+      tags: "new balance, 550, white, green, size 9",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1539185441755-769473a23570?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: alex.id,
+      title: "Vintage BAPE Shark Hoodie — 1st Camo",
+      description:
+        "OG BAPE full-zip shark hoodie in 1st camo green. Size L. Some pilling on the inside but exterior is clean. Shark teeth zipper works perfectly.",
+      price: 52000,
+      category: "apparel",
+      condition: "good",
+      listingType: "trade",
+      tags: "bape, shark, hoodie, camo, vintage, streetwear, japanese",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800",
+        "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: sam.id,
+      title: "Screen Print — 'Tokyo Drift' 18x24 AP",
+      description:
+        "Artist proof from a sold-out edition. 5-color screen print on heavyweight cotton paper. Inspired by Japanese car culture. Signed on the back.",
+      price: 12000,
+      category: "prints",
+      condition: "new",
+      listingType: "for_sale",
+      tags: "screen print, art, tokyo, japanese, car culture, artist proof, signed",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: admin.id,
+      title: "Off-White x Nike Dunk Low 'Lot 01' Size 10.5",
+      description:
+        "The one that started the 50 lot series. DS with original box, zip tie, and extra laces. This is lot 01 of 50 — the most coveted of the set.",
+      price: 87500,
+      category: "footwear",
+      condition: "new",
+      listingType: "for_sale",
+      tags: "off-white, nike, dunk, lot 01, virgil abloh, deadstock",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=800",
+        "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: maya.id,
+      title: "Vintage Sterling Silver Chain — Cuban Link 22\"",
+      description:
+        "Heavy .925 sterling silver Cuban link chain. 22 inches, 8mm width. Beautiful patina that can be polished to a mirror shine or worn as-is. Solid weight — not hollow.",
+      price: 37500,
+      category: "jewelry",
+      condition: "good",
+      listingType: "both",
+      tags: "sterling silver, cuban link, chain, vintage, heavy",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1515562141589-67f0d569b6db?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: jordan.id,
+      title: "Jordan 1 Retro High OG 'Chicago' 2015 Size 10",
+      description:
+        "The holy grail. 2015 Chicago 1s in size 10. Worn 3x, minimal creasing. Outsole has very light wear. Comes with OG box. These only go up in value.",
+      price: 110000,
+      category: "footwear",
+      condition: "like_new",
+      listingType: "trade",
+      tags: "jordan, jordan 1, chicago, retro, og, grail, size 10",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1556906781-9a412961c28c?w=800",
+        "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: alex.id,
+      title: "Palace Tri-Ferg Tee — White Size M",
+      description:
+        "Classic Palace tri-ferg logo tee. Size M, fits TTS. Worn and washed once. No cracking on the print. Crisp white.",
+      price: 8500,
+      category: "apparel",
+      condition: "like_new",
+      listingType: "for_sale",
+      tags: "palace, tri-ferg, tee, streetwear, london",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: sam.id,
+      title: "Handmade Leather Card Wallet — Horween Shell Cordovan",
+      description:
+        "Minimalist card wallet hand-stitched from Horween shell cordovan leather. Holds 4-6 cards and folded bills. Will develop a beautiful patina over time.",
+      price: 9500,
+      category: "accessories",
+      condition: "new",
+      listingType: "for_sale",
+      tags: "leather, wallet, horween, shell cordovan, handmade, minimalist",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: admin.id,
+      title: "Kaws Companion Figure — Open Edition Grey",
+      description:
+        "Kaws Companion figure in grey. 11 inches tall. Open edition but sold out everywhere. Displayed in a glass case — no flaws or discoloration.",
+      price: 42000,
+      category: "collectibles",
+      condition: "like_new",
+      listingType: "both",
+      tags: "kaws, companion, figure, art toy, collectible",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1563396983906-b3795482a59a?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: maya.id,
+      title: "Pearl Drop Earrings — Freshwater Baroque",
+      description:
+        "Asymmetric baroque freshwater pearl drop earrings on 14k gold-filled ear wires. Each pearl is unique in shape — no two pairs are the same.",
+      price: 13500,
+      category: "jewelry",
+      condition: "new",
+      listingType: "for_sale",
+      tags: "pearls, earrings, baroque, gold-filled, handmade",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: jordan.id,
+      title: "Yeezy 350 V2 'Zebra' Size 11",
+      description:
+        "DS pair, only taken out of box for photos. One of the most iconic Yeezy colorways. Original box, tags, and receipt from Adidas Confirmed.",
+      price: 27000,
+      category: "footwear",
+      condition: "new",
+      listingType: "both",
+      tags: "yeezy, adidas, 350 v2, zebra, kanye, deadstock",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: alex.id,
+      title: "Carhartt WIP Michigan Coat — Black Size L",
+      description:
+        "Carhartt WIP Michigan chore coat in black rigid denim. Size L. Worn a few times — just starting to show character. No rips or stains.",
+      price: 14000,
+      category: "apparel",
+      condition: "good",
+      listingType: "for_sale",
+      tags: "carhartt, wip, chore coat, michigan, workwear, denim",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: sam.id,
+      title: "Risograph Print — 'Bloom' A3 Edition of 30",
+      description:
+        "3-color risograph print on 150gsm paper. Fluorescent pink, teal, and gold. Numbered and signed. Edition of 30.",
+      price: 5500,
+      category: "prints",
+      condition: "new",
+      listingType: "for_sale",
+      tags: "risograph, print, art, limited edition, signed, numbered",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: admin.id,
+      title: "Bearbrick 1000% — Keith Haring",
+      description:
+        "Medicom Toy Bearbrick 1000% Keith Haring edition. 28 inches tall. Displayed in a dust-free case since purchase. A statement piece for any collection.",
+      price: 95000,
+      category: "collectibles",
+      condition: "like_new",
+      listingType: "trade",
+      tags: "bearbrick, medicom, keith haring, art toy, 1000%, collectible",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1563396983906-b3795482a59a?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: maya.id,
+      title: "Enamel Pin Set — 'Celestial Bodies' (4 pins)",
+      description:
+        "Set of 4 hard enamel pins: sun, moon, Saturn, and shooting star. Gold-plated with rubber clutch backs. Each pin is about 1 inch. Limited run of 100 sets.",
+      price: 4200,
+      category: "accessories",
+      condition: "new",
+      listingType: "for_sale",
+      tags: "enamel pins, celestial, gold, limited edition, set",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: jordan.id,
+      title: "Vintage Starter Jacket — Chicago Bulls 90s",
+      description:
+        "OG Starter satin jacket from the early 90s. Size XL. Snap buttons all work. Minor pilling on inside lining. Exterior is pristine. A true vintage grail.",
+      price: 34000,
+      category: "apparel",
+      condition: "good",
+      listingType: "trade",
+      tags: "starter, bulls, chicago, vintage, 90s, nba, jacket, satin",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: alex.id,
+      title: "Polaroid SX-70 Camera — Fully Refurbished",
+      description:
+        "Classic Polaroid SX-70 folding SLR camera. Professionally cleaned, new leather skin in tan. Tested and shooting perfectly. Uses SX-70 film (not included).",
+      price: 28000,
+      category: "collectibles",
+      condition: "good",
+      listingType: "both",
+      tags: "polaroid, sx-70, camera, vintage, refurbished, analog",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800",
+      ]),
+    },
+  });
+
+  await db.listing.create({
+    data: {
+      sellerId: sam.id,
+      title: "Woodblock Print — 'Waves' 12x16",
+      description:
+        "Hand-carved and hand-printed woodblock print on Japanese washi paper. Inspired by traditional ukiyo-e. Water-based inks. Edition of 15.",
+      price: 8500,
+      category: "prints",
+      condition: "new",
+      listingType: "for_sale",
+      tags: "woodblock, print, japanese, ukiyo-e, washi, art, handmade",
+      images: JSON.stringify([
+        "https://images.unsplash.com/photo-1578926375605-eaf7559b1458?w=800",
       ]),
     },
   });
@@ -318,6 +663,9 @@ async function main() {
       { listingId: listing5.id, userId: jordan.id },
       { listingId: listing5.id, userId: alex.id },
       { listingId: listing5.id, userId: sam.id },
+      { listingId: listing9.id, userId: maya.id },
+      { listingId: listing9.id, userId: jordan.id },
+      { listingId: listing9.id, userId: alex.id },
     ],
   });
 
@@ -453,10 +801,10 @@ async function main() {
 
   console.log("Seed complete!");
   console.log("");
-  console.log("5 users, 10 listings (8 active, 2 sold)");
+  console.log("5 users, 28 listings (26 active, 2 sold)");
   console.log("2 orders (1 shipped, 1 delivered w/ review)");
   console.log("2 conversations with messages & offers");
-  console.log("10 vouches, 3 invite codes");
+  console.log("13 vouches, 3 invite codes");
 }
 
 main()

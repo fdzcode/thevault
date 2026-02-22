@@ -33,7 +33,7 @@ export function VouchButton({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-zinc-500">
+      <span className="text-xs text-muted">
         {count} {count === 1 ? "member vouches" : "members vouch"} for this item
       </span>
       {isLoggedIn && !isOwnListing && (
@@ -41,9 +41,13 @@ export function VouchButton({
           type="button"
           onClick={() => vouchMutation.mutate({ listingId })}
           disabled={vouchMutation.isPending}
-          className="text-xs text-zinc-400 transition hover:text-zinc-200 disabled:opacity-50"
+          className={`rounded-xl px-3 py-1 text-xs font-medium transition disabled:opacity-50 ${
+            vouched
+              ? "bg-amber-600/20 text-amber-400 border border-amber-600/30"
+              : "glass-card border text-muted hover:text-amber-400 hover:border-amber-600/30"
+          }`}
         >
-          {vouched ? "Unvouch" : "Vouch"}
+          {vouched ? "Vouched" : "Vouch"}
         </button>
       )}
     </div>

@@ -15,6 +15,9 @@ export type Category = z.infer<typeof categoryEnum>;
 export const conditionEnum = z.enum(["new", "like_new", "good", "fair"]);
 export type Condition = z.infer<typeof conditionEnum>;
 
+export const listingTypeEnum = z.enum(["for_sale", "trade", "both"]);
+export type ListingType = z.infer<typeof listingTypeEnum>;
+
 export const listingStatusEnum = z.enum(["active", "sold", "cancelled"]);
 export type ListingStatus = z.infer<typeof listingStatusEnum>;
 

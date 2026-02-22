@@ -106,7 +106,7 @@ export const messageRouter = createTRPCRouter({
           messages: {
             take: 1,
             orderBy: { createdAt: "desc" },
-            select: { content: true, createdAt: true },
+            select: { content: true, createdAt: true, senderId: true },
           },
         },
       });

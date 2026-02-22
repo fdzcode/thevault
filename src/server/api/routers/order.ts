@@ -256,7 +256,7 @@ export const orderRouter = createTRPCRouter({
 
       // When delivered, move funds from pending to available
       if (input.status === "delivered") {
-        const payoutAmount = order.sellerPayout || order.totalAmount;
+        const payoutAmount = order.sellerPayoutAmount || order.totalAmount;
         await ctx.db.sellerBalance.update({
           where: { userId: order.sellerId },
           data: {

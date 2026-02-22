@@ -52,14 +52,18 @@ export function WishlistButton({
       type="button"
       onClick={() => toggleMutation.mutate({ listingId })}
       disabled={toggleMutation.isPending}
-      className="flex items-center gap-1.5 text-sm text-zinc-400 transition hover:text-zinc-200 disabled:opacity-50"
+      className={`flex items-center gap-1.5 text-sm transition disabled:opacity-50 ${
+        wishlisted
+          ? "text-[#D4AF37]"
+          : "text-muted hover:text-[#D4AF37]"
+      }`}
       aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         className="h-5 w-5"
-        fill={wishlisted ? "currentColor" : "none"}
+        fill={wishlisted ? "#D4AF37" : "none"}
         stroke="currentColor"
         strokeWidth={2}
       >

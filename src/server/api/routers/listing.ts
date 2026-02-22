@@ -12,6 +12,7 @@ import {
   conditionEnum,
   imageUrlSchema,
   listingStatusEnum,
+  listingTypeEnum,
 } from "~/lib/validators";
 
 export const listingRouter = createTRPCRouter({
@@ -23,6 +24,7 @@ export const listingRouter = createTRPCRouter({
         price: z.number().int().min(100), // minimum $1.00
         category: categoryEnum,
         condition: conditionEnum,
+        listingType: listingTypeEnum.default("for_sale"),
         tags: z.string().max(500).default(""),
         images: z.array(imageUrlSchema).max(10).default([]),
       }),
@@ -43,6 +45,7 @@ export const listingRouter = createTRPCRouter({
           price: input.price,
           category: input.category,
           condition: input.condition,
+          listingType: input.listingType,
           tags: input.tags,
           images: JSON.stringify(input.images),
         },
@@ -58,6 +61,7 @@ export const listingRouter = createTRPCRouter({
         price: z.number().int().min(100).optional(),
         category: categoryEnum.optional(),
         condition: conditionEnum.optional(),
+        listingType: listingTypeEnum.optional(),
         tags: z.string().max(500).optional(),
         images: z.array(imageUrlSchema).max(10).optional(),
       }),
@@ -188,6 +192,7 @@ export const listingRouter = createTRPCRouter({
         query: z.string().optional(),
         category: categoryEnum.optional(),
         condition: conditionEnum.optional(),
+        listingType: listingTypeEnum.optional(),
         minPrice: z.number().int().min(0).optional(),
         maxPrice: z.number().int().optional(),
         sort: z
@@ -209,6 +214,7 @@ export const listingRouter = createTRPCRouter({
       }
       if (input.category) where.category = input.category;
       if (input.condition) where.condition = input.condition;
+      if (input.listingType) where.listingType = input.listingType;
       if (input.minPrice !== undefined || input.maxPrice !== undefined) {
         where.price = {
           ...(input.minPrice !== undefined ? { gte: input.minPrice } : {}),

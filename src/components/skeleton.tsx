@@ -1,14 +1,14 @@
 export function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded bg-zinc-800 ${className}`}
+      className={`animate-shimmer rounded-xl bg-zinc-800/50 ${className}`}
     />
   );
 }
 
 export function ListingCardSkeleton() {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 overflow-hidden">
+    <div className="trade-card">
       <Skeleton className="h-48 w-full rounded-none" />
       <div className="p-4 space-y-2">
         <Skeleton className="h-5 w-3/4" />
@@ -24,7 +24,7 @@ export function ListingCardSkeleton() {
 
 export function TableRowSkeleton({ cols = 4 }: { cols?: number }) {
   return (
-    <tr className="border-b border-zinc-800">
+    <tr className="border-b border-[var(--divider)]">
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="px-4 py-3">
           <Skeleton className="h-4 w-full" />
@@ -36,7 +36,7 @@ export function TableRowSkeleton({ cols = 4 }: { cols?: number }) {
 
 export function StatCardSkeleton() {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+    <div className="glass-card">
       <Skeleton className="h-4 w-20 mb-2" />
       <Skeleton className="h-8 w-28" />
     </div>

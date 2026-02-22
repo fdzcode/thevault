@@ -21,7 +21,7 @@ export function HomeSearch() {
     <form onSubmit={handleSubmit} className="w-full max-w-xl">
       <div className="relative">
         <svg
-          className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-500"
+          className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--text-muted)]"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -39,7 +39,7 @@ export function HomeSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search designer items..."
-          className="w-full rounded-full border border-zinc-700 bg-zinc-900 py-3 pl-12 pr-4 text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+          className="input-bg w-full rounded-full border border-[var(--divider)] py-3 pl-12 pr-4 text-[var(--text-heading)] placeholder-[var(--text-muted)] transition focus:border-[#D4AF37] focus:outline-none focus:ring-1 focus:ring-[#D4AF37]/30"
         />
       </div>
     </form>

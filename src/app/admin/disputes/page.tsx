@@ -15,7 +15,7 @@ function statusBadge(status: string) {
     under_review: "bg-blue-900/50 text-blue-400",
     resolved_buyer: "bg-emerald-900/50 text-emerald-400",
     resolved_seller: "bg-emerald-900/50 text-emerald-400",
-    closed: "bg-zinc-800 text-zinc-400",
+    closed: "bg-[var(--divider)] text-[var(--text-muted)]",
   };
   const labels: Record<string, string> = {
     open: "Open",
@@ -27,7 +27,7 @@ function statusBadge(status: string) {
   return (
     <span
       className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-        styles[status] ?? "bg-zinc-800 text-zinc-400"
+        styles[status] ?? "bg-[var(--divider)] text-[var(--text-muted)]"
       }`}
     >
       {labels[status] ?? status}
@@ -75,8 +75,8 @@ export default function AdminDisputesPage() {
 
   if (error && (error.data?.code === "FORBIDDEN" || error.data?.code === "UNAUTHORIZED")) {
     return (
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <p className="text-red-400">Access denied. Redirecting...</p>
+      <main className="page-bg min-h-screen flex items-center justify-center">
+        <p className="font-display text-xl italic text-muted">Access denied. Redirecting...</p>
       </main>
     );
   }
@@ -84,240 +84,264 @@ export default function AdminDisputesPage() {
   const selectedDisputeData = data?.disputes.find((d) => d.id === selectedDispute);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/admin" className="text-sm text-zinc-400 transition hover:text-white">
+    <main className="page-bg min-h-screen">
+      {/* Header */}
+      <section className="relative px-4 pt-16 pb-10 overflow-hidden bg-gradient-to-b from-zinc-900 via-zinc-800/50 to-transparent">
+        <div className="mx-auto max-w-6xl">
+          <Link href="/admin" className="mb-4 inline-flex items-center gap-1 text-xs uppercase tracking-widest text-[#D4AF37] transition hover:text-[var(--text-heading)]">
             &larr; Dashboard
           </Link>
-          <h1 className="text-2xl font-bold text-white">Dispute Management</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-4xl font-light text-[var(--text-heading)]">
+              Dispute <span className="gradient-text">Management</span>
+            </h1>
+            <span className="rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 px-2.5 py-0.5 text-xs font-medium text-[#D4AF37]">
+              Admin
+            </span>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Status Filter Tabs */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        {STATUS_OPTIONS.map((status) => (
-          <button
-            key={status}
-            onClick={() => setStatusFilter(status)}
-            className={`rounded-lg px-3 py-2 text-xs font-medium transition ${
-              statusFilter === status
-                ? "bg-white text-black"
-                : "bg-zinc-900 text-zinc-400 hover:text-white"
-            }`}
-          >
-            {status === "all"
-              ? "All"
-              : status === "under_review"
-                ? "Under Review"
-                : status === "resolved_buyer"
-                  ? "Resolved (Buyer)"
-                  : status === "resolved_seller"
-                    ? "Resolved (Seller)"
-                    : status.charAt(0).toUpperCase() + status.slice(1)}
-          </button>
-        ))}
-      </div>
+      <div className="mx-auto max-w-6xl px-4 pb-16">
+        {/* Status Filter Tabs */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          {STATUS_OPTIONS.map((status) => (
+            <button
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={`rounded-full px-4 py-2 text-xs font-medium tracking-wide transition ${
+                statusFilter === status
+                  ? "bg-gradient-to-r from-[#D4AF37] to-[#B8960C] text-black"
+                  : "glass-card text-muted hover:text-[var(--text-heading)]"
+              }`}
+            >
+              {status === "all"
+                ? "All"
+                : status === "under_review"
+                  ? "Under Review"
+                  : status === "resolved_buyer"
+                    ? "Resolved (Buyer)"
+                    : status === "resolved_seller"
+                      ? "Resolved (Seller)"
+                      : status.charAt(0).toUpperCase() + status.slice(1)}
+            </button>
+          ))}
+        </div>
 
-      <div className="flex flex-col gap-6 lg:flex-row">
-        {/* Disputes List */}
-        <div className="flex-1">
-          {isLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="animate-pulse rounded border border-zinc-800 bg-zinc-900 p-4"
-                >
-                  <div className="h-4 w-48 rounded bg-zinc-800" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {data?.disputes.map((dispute) => (
-                <button
-                  key={dispute.id}
-                  onClick={() => {
-                    setSelectedDispute(dispute.id);
-                    setResolveStatus(dispute.status === "open" ? "under_review" : dispute.status);
-                    setAdminNotes(dispute.adminNotes ?? "");
-                    setResolution(dispute.resolution ?? "");
-                  }}
-                  className={`w-full rounded-lg border p-4 text-left transition ${
-                    selectedDispute === dispute.id
-                      ? "border-zinc-600 bg-zinc-900"
-                      : "border-zinc-800 bg-zinc-900/50 hover:border-zinc-700"
-                  }`}
-                >
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-white">
-                      {dispute.order.listing.title}
-                    </span>
-                    {statusBadge(dispute.status)}
+        <div className="flex flex-col gap-6 lg:flex-row">
+          {/* Disputes List */}
+          <div className="flex-1">
+            {isLoading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="glass-card rounded-2xl p-5"
+                  >
+                    <div className="h-4 w-48 animate-shimmer rounded bg-[var(--divider)]" />
                   </div>
-                  <p className="mb-1 text-xs text-zinc-400">
-                    {reasonLabel(dispute.reason)} &middot; $
-                    {(dispute.order.totalAmount / 100).toFixed(2)}
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {data?.disputes.map((dispute) => (
+                  <button
+                    key={dispute.id}
+                    onClick={() => {
+                      setSelectedDispute(dispute.id);
+                      setResolveStatus(dispute.status === "open" ? "under_review" : dispute.status);
+                      setAdminNotes(dispute.adminNotes ?? "");
+                      setResolution(dispute.resolution ?? "");
+                    }}
+                    className={`glass-card w-full rounded-2xl p-5 text-left transition ${
+                      selectedDispute === dispute.id
+                        ? "border-[#D4AF37]/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]"
+                        : "hover:shadow-[0_0_15px_rgba(212,175,55,0.05)]"
+                    }`}
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-sm font-medium text-[var(--text-heading)]">
+                        {dispute.order.listing.title}
+                      </span>
+                      {statusBadge(dispute.status)}
+                    </div>
+                    <p className="mb-1 text-xs text-muted">
+                      {reasonLabel(dispute.reason)} &middot; $
+                      {(dispute.order.totalAmount / 100).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-muted">
+                      Filed by{" "}
+                      {dispute.filer.profile?.username
+                        ? `@${dispute.filer.profile.username}`
+                        : dispute.filer.name ?? dispute.filer.email}{" "}
+                      against{" "}
+                      {dispute.against.profile?.username
+                        ? `@${dispute.against.profile.username}`
+                        : dispute.against.name ?? dispute.against.email}
+                    </p>
+                    <p className="mt-1 text-xs text-muted">
+                      {new Date(dispute.createdAt).toLocaleDateString()}
+                    </p>
+                  </button>
+                ))}
+                {data?.disputes.length === 0 && (
+                  <div className="py-12 text-center">
+                    <p className="font-display text-xl italic text-muted">No disputes found.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Dispute Detail / Resolution Panel */}
+          {selectedDisputeData && (
+            <div className="glass-card w-full rounded-2xl p-6 lg:w-96">
+              <h3 className="font-display mb-4 text-lg font-light text-[var(--text-heading)]">
+                Dispute <span className="gradient-text">Details</span>
+              </h3>
+
+              <div className="mb-4 space-y-3 text-sm">
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-muted">Listing</span>
+                  <p className="mt-0.5 text-[var(--text-heading)]">{selectedDisputeData.order.listing.title}</p>
+                </div>
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-muted">Amount</span>
+                  <p className="mt-0.5 text-[var(--text-heading)]">
+                    ${(selectedDisputeData.order.totalAmount / 100).toFixed(2)}
                   </p>
-                  <p className="text-xs text-zinc-500">
-                    Filed by{" "}
-                    {dispute.filer.profile?.username
-                      ? `@${dispute.filer.profile.username}`
-                      : dispute.filer.name ?? dispute.filer.email}{" "}
-                    against{" "}
-                    {dispute.against.profile?.username
-                      ? `@${dispute.against.profile.username}`
-                      : dispute.against.name ?? dispute.against.email}
+                </div>
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-muted">Reason</span>
+                  <p className="mt-0.5 text-[var(--text-heading)]">{reasonLabel(selectedDisputeData.reason)}</p>
+                </div>
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-muted">Filed by</span>
+                  <p className="mt-0.5 text-[var(--text-heading)]">
+                    {selectedDisputeData.filer.profile?.username
+                      ? `@${selectedDisputeData.filer.profile.username}`
+                      : selectedDisputeData.filer.name ?? selectedDisputeData.filer.email}
                   </p>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    {new Date(dispute.createdAt).toLocaleDateString()}
+                </div>
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-muted">Against</span>
+                  <p className="mt-0.5 text-[var(--text-heading)]">
+                    {selectedDisputeData.against.profile?.username
+                      ? `@${selectedDisputeData.against.profile.username}`
+                      : selectedDisputeData.against.name ?? selectedDisputeData.against.email}
                   </p>
-                </button>
-              ))}
-              {data?.disputes.length === 0 && (
-                <p className="py-8 text-center text-zinc-500">No disputes found.</p>
+                </div>
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-muted">Status</span>
+                  <div className="mt-1">{statusBadge(selectedDisputeData.status)}</div>
+                </div>
+                <div>
+                  <span className="text-xs uppercase tracking-widest text-muted">Description</span>
+                  <p className="mt-1 text-[var(--text-body)]">{selectedDisputeData.description}</p>
+                </div>
+                {selectedDisputeData.adminNotes && (
+                  <div>
+                    <span className="text-xs uppercase tracking-widest text-muted">Current Admin Notes</span>
+                    <p className="mt-1 text-[var(--text-body)]">{selectedDisputeData.adminNotes}</p>
+                  </div>
+                )}
+                {selectedDisputeData.resolution && (
+                  <div>
+                    <span className="text-xs uppercase tracking-widest text-muted">Current Resolution</span>
+                    <p className="mt-1 text-[var(--text-body)]">{selectedDisputeData.resolution}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="my-4 h-px divider-line" />
+
+              <h4 className="font-display mb-3 text-sm font-semibold text-[var(--text-heading)]">
+                Update Dispute
+              </h4>
+
+              {/* Resolution Status */}
+              <div className="mb-3">
+                <label className="mb-1.5 block text-xs uppercase tracking-widest text-muted">Status</label>
+                <select
+                  value={resolveStatus}
+                  onChange={(e) => setResolveStatus(e.target.value)}
+                  className="w-full input-bg rounded-xl border px-3 py-2.5 text-sm text-[var(--text-heading)] outline-none focus:border-[#D4AF37] transition"
+                >
+                  {RESOLUTION_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {s === "under_review"
+                        ? "Under Review"
+                        : s === "resolved_buyer"
+                          ? "Resolved (Buyer Wins)"
+                          : s === "resolved_seller"
+                            ? "Resolved (Seller Wins)"
+                            : "Closed"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Admin Notes */}
+              <div className="mb-3">
+                <label className="mb-1.5 block text-xs uppercase tracking-widest text-muted">Admin Notes</label>
+                <textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  rows={3}
+                  className="w-full input-bg rounded-xl border px-3 py-2.5 text-sm text-[var(--text-heading)] placeholder-[var(--text-muted)] outline-none focus:border-[#D4AF37] transition"
+                  placeholder="Internal notes about this dispute..."
+                />
+              </div>
+
+              {/* Resolution */}
+              <div className="mb-4">
+                <label className="mb-1.5 block text-xs uppercase tracking-widest text-muted">Resolution</label>
+                <textarea
+                  value={resolution}
+                  onChange={(e) => setResolution(e.target.value)}
+                  rows={3}
+                  className="w-full input-bg rounded-xl border px-3 py-2.5 text-sm text-[var(--text-heading)] placeholder-[var(--text-muted)] outline-none focus:border-[#D4AF37] transition"
+                  placeholder="Resolution details visible to users..."
+                />
+              </div>
+
+              <button
+                onClick={() =>
+                  resolveDispute.mutate({
+                    disputeId: selectedDisputeData.id,
+                    status: resolveStatus as typeof RESOLUTION_STATUSES[number],
+                    adminNotes: adminNotes || undefined,
+                    resolution: resolution || undefined,
+                  })
+                }
+                disabled={resolveDispute.isPending}
+                className="w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B8960C] px-4 py-2.5 text-sm font-semibold text-black transition hover:shadow-lg hover:shadow-[#D4AF37]/25 hover:brightness-110 disabled:opacity-50"
+              >
+                {resolveDispute.isPending ? "Updating..." : "Update Dispute"}
+              </button>
+
+              {resolveDispute.error && (
+                <p className="mt-2 text-sm text-red-400">{resolveDispute.error.message}</p>
               )}
+
+              <button
+                onClick={() => setSelectedDispute(null)}
+                className="glass-card mt-3 w-full rounded-full px-4 py-2.5 text-sm text-muted transition hover:text-[var(--text-heading)]"
+              >
+                Close Panel
+              </button>
             </div>
           )}
         </div>
-
-        {/* Dispute Detail / Resolution Panel */}
-        {selectedDisputeData && (
-          <div className="w-full rounded-lg border border-zinc-800 bg-zinc-900 p-6 lg:w-96">
-            <h3 className="mb-4 text-lg font-semibold text-white">Dispute Details</h3>
-
-            <div className="mb-4 space-y-2 text-sm">
-              <div>
-                <span className="text-zinc-400">Listing: </span>
-                <span className="text-white">{selectedDisputeData.order.listing.title}</span>
-              </div>
-              <div>
-                <span className="text-zinc-400">Amount: </span>
-                <span className="text-white">
-                  ${(selectedDisputeData.order.totalAmount / 100).toFixed(2)}
-                </span>
-              </div>
-              <div>
-                <span className="text-zinc-400">Reason: </span>
-                <span className="text-white">{reasonLabel(selectedDisputeData.reason)}</span>
-              </div>
-              <div>
-                <span className="text-zinc-400">Filed by: </span>
-                <span className="text-white">
-                  {selectedDisputeData.filer.profile?.username
-                    ? `@${selectedDisputeData.filer.profile.username}`
-                    : selectedDisputeData.filer.name ?? selectedDisputeData.filer.email}
-                </span>
-              </div>
-              <div>
-                <span className="text-zinc-400">Against: </span>
-                <span className="text-white">
-                  {selectedDisputeData.against.profile?.username
-                    ? `@${selectedDisputeData.against.profile.username}`
-                    : selectedDisputeData.against.name ?? selectedDisputeData.against.email}
-                </span>
-              </div>
-              <div>
-                <span className="text-zinc-400">Status: </span>
-                {statusBadge(selectedDisputeData.status)}
-              </div>
-              <div>
-                <span className="text-zinc-400">Description: </span>
-                <p className="mt-1 text-zinc-300">{selectedDisputeData.description}</p>
-              </div>
-              {selectedDisputeData.adminNotes && (
-                <div>
-                  <span className="text-zinc-400">Current Admin Notes: </span>
-                  <p className="mt-1 text-zinc-300">{selectedDisputeData.adminNotes}</p>
-                </div>
-              )}
-              {selectedDisputeData.resolution && (
-                <div>
-                  <span className="text-zinc-400">Current Resolution: </span>
-                  <p className="mt-1 text-zinc-300">{selectedDisputeData.resolution}</p>
-                </div>
-              )}
-            </div>
-
-            <hr className="my-4 border-zinc-800" />
-
-            <h4 className="mb-3 text-sm font-semibold text-white">Update Dispute</h4>
-
-            {/* Resolution Status */}
-            <div className="mb-3">
-              <label className="mb-1 block text-xs text-zinc-400">Status</label>
-              <select
-                value={resolveStatus}
-                onChange={(e) => setResolveStatus(e.target.value)}
-                className="w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white outline-none focus:border-zinc-600"
-              >
-                {RESOLUTION_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s === "under_review"
-                      ? "Under Review"
-                      : s === "resolved_buyer"
-                        ? "Resolved (Buyer Wins)"
-                        : s === "resolved_seller"
-                          ? "Resolved (Seller Wins)"
-                          : "Closed"}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Admin Notes */}
-            <div className="mb-3">
-              <label className="mb-1 block text-xs text-zinc-400">Admin Notes</label>
-              <textarea
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                rows={3}
-                className="w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-zinc-600"
-                placeholder="Internal notes about this dispute..."
-              />
-            </div>
-
-            {/* Resolution */}
-            <div className="mb-4">
-              <label className="mb-1 block text-xs text-zinc-400">Resolution</label>
-              <textarea
-                value={resolution}
-                onChange={(e) => setResolution(e.target.value)}
-                rows={3}
-                className="w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-zinc-600"
-                placeholder="Resolution details visible to users..."
-              />
-            </div>
-
-            <button
-              onClick={() =>
-                resolveDispute.mutate({
-                  disputeId: selectedDisputeData.id,
-                  status: resolveStatus as typeof RESOLUTION_STATUSES[number],
-                  adminNotes: adminNotes || undefined,
-                  resolution: resolution || undefined,
-                })
-              }
-              disabled={resolveDispute.isPending}
-              className="w-full rounded bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-zinc-200 disabled:opacity-50"
-            >
-              {resolveDispute.isPending ? "Updating..." : "Update Dispute"}
-            </button>
-
-            {resolveDispute.error && (
-              <p className="mt-2 text-sm text-red-400">{resolveDispute.error.message}</p>
-            )}
-
-            <button
-              onClick={() => setSelectedDispute(null)}
-              className="mt-2 w-full rounded px-4 py-2 text-sm text-zinc-400 transition hover:text-white"
-            >
-              Close Panel
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* Footer */}
+      <footer className="border-t divider-line">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-8">
+          <span className="gradient-text font-display text-sm font-bold tracking-[0.2em]">THE VAULT</span>
+          <span className="text-xs text-muted tracking-widest">ADMIN PANEL</span>
+        </div>
+      </footer>
     </main>
   );
 }

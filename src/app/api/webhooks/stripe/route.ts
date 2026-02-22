@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (order) {
-          const payoutAmount = order.sellerPayout || order.totalAmount;
+          const payoutAmount = order.sellerPayoutAmount || order.totalAmount;
           await db.sellerBalance.upsert({
             where: { userId: order.sellerId },
             create: {

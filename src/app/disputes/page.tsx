@@ -9,7 +9,7 @@ function statusBadge(status: string) {
     under_review: "bg-blue-400/10 text-blue-400",
     resolved_buyer: "bg-green-400/10 text-green-400",
     resolved_seller: "bg-green-400/10 text-green-400",
-    closed: "bg-zinc-400/10 text-zinc-400",
+    closed: "bg-neutral-400/10 text-neutral-400",
   };
   const label: Record<string, string> = {
     open: "Open",
@@ -20,7 +20,7 @@ function statusBadge(status: string) {
   };
   return (
     <span
-      className={`rounded px-2 py-0.5 text-xs font-medium ${styles[status] ?? "bg-zinc-400/10 text-zinc-400"}`}
+      className={`rounded-xl px-2 py-0.5 text-xs font-medium ${styles[status] ?? "bg-neutral-400/10 text-neutral-400"}`}
     >
       {label[status] ?? status}
     </span>
@@ -47,63 +47,99 @@ export default function DisputesPage() {
   const allDisputes = data?.pages.flatMap((page) => page.disputes) ?? [];
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">My Disputes</h1>
-
-      {isLoading ? (
-        <p className="text-zinc-500">Loading...</p>
-      ) : allDisputes.length === 0 ? (
-        <div className="rounded border border-zinc-800 p-8 text-center">
-          <p className="text-zinc-500">No disputes.</p>
+    <main className="page-bg min-h-screen">
+      {/* Header */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-zinc-900 via-zinc-800 to-transparent px-4 pb-16 pt-20 text-center">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 h-1 w-1 rounded-full bg-[#D4AF37]/30 animate-gold-pulse" />
+          <div className="absolute bottom-1/3 right-1/3 h-1 w-1 rounded-full bg-[#D4AF37]/20 animate-gold-pulse" style={{ animationDelay: "2s" }} />
         </div>
-      ) : (
-        <>
-          <ul className="space-y-4">
-            {allDisputes.map((dispute) => (
-              <li key={dispute.id}>
-                <div className="rounded border border-zinc-800 p-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-semibold text-white">
-                      {dispute.order.listing.title}
-                    </h2>
-                    {statusBadge(dispute.status)}
-                  </div>
-                  <p className="mt-1 text-sm text-zinc-400">
-                    {reasonLabel(dispute.reason)} &middot;{" "}
-                    {new Date(dispute.createdAt).toLocaleDateString()}
-                  </p>
-                  <p className="mt-1 text-sm text-zinc-500">
-                    Filed by{" "}
-                    {dispute.filer.profile?.username ?? dispute.filer.name}{" "}
-                    against{" "}
-                    {dispute.against.profile?.username ?? dispute.against.name}
-                  </p>
-                  <div className="mt-3 flex gap-3">
-                    <Link
-                      href={`/orders/${dispute.order.id}`}
-                      className="text-xs text-zinc-400 transition hover:text-white"
-                    >
-                      View Order
-                    </Link>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+        <div className="relative z-10">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#D4AF37]/10 animate-float">
+            <svg className="h-8 w-8 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
+          </div>
+          <p className="text-muted text-xs tracking-widest uppercase mb-3">Resolution Center</p>
+          <h1 className="font-display text-5xl font-light gradient-text">My Disputes</h1>
+          <div className="mx-auto mt-4 h-px w-24 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+        </div>
+      </section>
 
-          {hasNextPage && (
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-                className="rounded border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:bg-zinc-800 disabled:opacity-50"
-              >
-                {isFetchingNextPage ? "Loading..." : "Load more"}
-              </button>
-            </div>
-          )}
-        </>
-      )}
+      <div className="mx-auto max-w-4xl px-4 pb-16">
+        {isLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="glass-card rounded-2xl p-6">
+                <div className="mb-3 h-5 w-2/3 animate-shimmer rounded-lg bg-[var(--divider)]" />
+                <div className="h-4 w-1/2 animate-shimmer rounded-lg bg-[var(--divider)]" />
+              </div>
+            ))}
+          </div>
+        ) : allDisputes.length === 0 ? (
+          <div className="glass-card rounded-2xl p-12 text-center">
+            <p className="font-display text-xl italic text-[var(--text-muted)]">No disputes.</p>
+            <p className="mt-2 text-sm text-[var(--text-muted)]">All clear -- no open disputes.</p>
+          </div>
+        ) : (
+          <>
+            <ul className="space-y-4">
+              {allDisputes.map((dispute) => (
+                <li key={dispute.id}>
+                  <div className="glass-card rounded-2xl p-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="font-display text-lg font-semibold text-[var(--text-heading)]">
+                        {dispute.order.listing.title}
+                      </h2>
+                      {statusBadge(dispute.status)}
+                    </div>
+                    <div className="mt-2 flex items-center gap-2 text-sm text-[var(--text-body)]">
+                      <span className="inline-block rounded-lg bg-[#D4AF37]/10 px-2 py-0.5 text-xs text-[#D4AF37]">
+                        {reasonLabel(dispute.reason)}
+                      </span>
+                      <span className="text-[var(--text-muted)]">&middot;</span>
+                      <span className="text-[var(--text-muted)]">
+                        {new Date(dispute.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-[var(--text-muted)]">
+                      Filed by{" "}
+                      <span className="text-[var(--text-body)]">{dispute.filer.profile?.username ?? dispute.filer.name}</span>{" "}
+                      against{" "}
+                      <span className="text-[var(--text-body)]">{dispute.against.profile?.username ?? dispute.against.name}</span>
+                    </p>
+                    <div className="mt-4 border-t border-[var(--divider)] pt-4">
+                      <Link
+                        href={`/orders/${dispute.order.id}`}
+                        className="inline-block rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#B8960C] px-4 py-2 text-xs font-semibold text-black transition hover:shadow-lg hover:shadow-[#D4AF37]/20"
+                      >
+                        View Order
+                      </Link>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {hasNextPage && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                  className="glass-card rounded-xl px-6 py-2.5 font-medium text-[var(--text-body)] transition hover:border-[#D4AF37]/30 hover:text-[#D4AF37] disabled:opacity-50"
+                >
+                  {isFetchingNextPage ? "Loading..." : "Load more"}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t divider-line py-8 text-center">
+        <p className="font-display text-sm tracking-widest gradient-text">THE VAULT</p>
+      </footer>
     </main>
   );
 }

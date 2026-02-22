@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
-import { inputClass, labelClass } from "~/lib/constants";
+import { inputClass, labelClass, goldButtonClass, secondaryButtonClass } from "~/lib/constants";
 
 type PaymentMethod = "stripe" | "crypto";
 
@@ -78,7 +78,7 @@ export function BuyButton({ listingId }: { listingId: string }) {
     return (
       <button
         onClick={() => setShowForm(true)}
-        className="rounded bg-white px-6 py-2 font-semibold text-black transition hover:bg-zinc-200"
+        className={goldButtonClass}
       >
         Buy Now
       </button>
@@ -86,16 +86,16 @@ export function BuyButton({ listingId }: { listingId: string }) {
   }
 
   return (
-    <div className="mt-4 rounded border border-zinc-800 p-4">
+    <div className="mt-4 glass-card">
       {/* Payment method toggle */}
       <div className="mb-4 flex gap-2">
         <button
           type="button"
           onClick={() => setPaymentMethod("stripe")}
-          className={`rounded px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-xl px-4 py-2 text-sm font-semibold tracking-widest transition ${
             paymentMethod === "stripe"
-              ? "bg-white text-black"
-              : "border border-zinc-700 text-zinc-400 hover:text-zinc-200"
+              ? "bg-gradient-to-r from-[#D4AF37] to-[#F4E5C3] text-black"
+              : "glass-card border text-muted hover:text-white"
           }`}
         >
           Pay with Card
@@ -103,17 +103,17 @@ export function BuyButton({ listingId }: { listingId: string }) {
         <button
           type="button"
           onClick={() => setPaymentMethod("crypto")}
-          className={`rounded px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-xl px-4 py-2 text-sm font-semibold tracking-widest transition ${
             paymentMethod === "crypto"
-              ? "bg-white text-black"
-              : "border border-zinc-700 text-zinc-400 hover:text-zinc-200"
+              ? "bg-gradient-to-r from-[#D4AF37] to-[#F4E5C3] text-black"
+              : "glass-card border text-muted hover:text-white"
           }`}
         >
           Pay with Crypto
         </button>
       </div>
 
-      <h3 className="mb-4 text-lg font-semibold">Shipping Address</h3>
+      <h3 className="mb-4 font-display text-lg font-semibold text-[var(--text-heading)]">Shipping Address</h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label htmlFor="fullName" className={labelClass}>
@@ -216,14 +216,14 @@ export function BuyButton({ listingId }: { listingId: string }) {
           <button
             type="submit"
             disabled={isPending}
-            className="rounded bg-white px-6 py-2 font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
+            className={goldButtonClass}
           >
             {isPending ? "Processing..." : "Proceed to Checkout"}
           </button>
           <button
             type="button"
             onClick={() => setShowForm(false)}
-            className="rounded border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:bg-zinc-800"
+            className={secondaryButtonClass}
           >
             Cancel
           </button>

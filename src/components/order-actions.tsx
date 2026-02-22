@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
-import { inputClass } from "~/lib/constants";
+import { inputClass, goldButtonClass } from "~/lib/constants";
 
 const CARRIERS = [
   { value: "usps", label: "USPS" },
@@ -80,10 +80,6 @@ export function OrderActions({
     },
   });
 
-  const selectClass =
-    "mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-white focus:border-zinc-500 focus:outline-none";
-
-  // Show tracking link if order has tracking info
   const trackingUrl = existingTracking
     ? getTrackingUrl(existingCarrier, existingTracking)
     : null;
@@ -93,52 +89,45 @@ export function OrderActions({
 
 
   return (
-    <div className="mt-6 space-y-4">
-      {error && <p className="text-sm text-red-400">{error}</p>}
+    <div className="mt-8 space-y-5">
+      {error && (
+        <div className="glass-card rounded-2xl border-red-500/20 bg-red-500/5 p-4">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
 
       {/* Tracking Info Display */}
       {existingTracking && (
-        <div className="rounded border border-zinc-800 bg-zinc-900/50 p-4">
-          <h3 className="mb-2 text-sm font-semibold text-zinc-300">
+        <div className="glass-card rounded-2xl p-5">
+          <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-muted">
             Tracking Information
           </h3>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          <div className="space-y-2 text-sm">
             {existingCarrier && (
-              <span className="text-zinc-400">
-                Carrier:{" "}
-                <span className="font-medium text-zinc-200">
+              <div className="flex justify-between border-b divider-line pb-2">
+                <span className="text-muted">Carrier</span>
+                <span className="font-medium text-[var(--text-heading)]">
                   {carrierLabel}
                 </span>
-              </span>
+              </div>
             )}
-            <span className="text-zinc-400">
-              Tracking:{" "}
-              <span className="font-medium text-zinc-200">
+            <div className="flex justify-between">
+              <span className="text-muted">Tracking</span>
+              <span className="font-medium text-[var(--text-heading)]">
                 {existingTracking}
               </span>
-            </span>
+            </div>
           </div>
           {trackingUrl && (
             <a
               href={trackingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-blue-400 hover:text-blue-300"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B8960C] px-5 py-2 text-sm font-semibold text-black transition hover:shadow-lg hover:shadow-[#D4AF37]/20"
             >
               Track Package
-              <svg
-                className="h-4 w-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                />
+              <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
               </svg>
             </a>
           )}
@@ -147,12 +136,12 @@ export function OrderActions({
 
       {/* Seller: Ship Order */}
       {role === "seller" && status === "paid" && (
-        <div className="rounded border border-zinc-800 p-4">
-          <h3 className="mb-3 font-semibold">Ship Order</h3>
+        <div className="glass-card">
+          <h3 className="mb-3 font-display font-semibold text-[var(--text-heading)]">Ship Order</h3>
           <div className="mb-3">
             <label
               htmlFor="carrier"
-              className="block text-sm font-medium text-zinc-300"
+              className="block text-sm font-medium text-[var(--text-body)]"
             >
               Shipping Carrier
             </label>
@@ -160,7 +149,7 @@ export function OrderActions({
               id="carrier"
               value={shippingCarrier}
               onChange={(e) => setShippingCarrier(e.target.value)}
-              className={selectClass}
+              className={inputClass}
             >
               {CARRIERS.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -172,7 +161,7 @@ export function OrderActions({
           <div className="mb-3">
             <label
               htmlFor="tracking"
-              className="block text-sm font-medium text-zinc-300"
+              className="block text-sm font-medium text-[var(--text-body)]"
             >
               Tracking Number
             </label>
@@ -199,7 +188,7 @@ export function OrderActions({
               });
             }}
             disabled={updateStatus.isPending}
-            className="rounded bg-white px-4 py-2 font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
+            className={goldButtonClass}
           >
             {updateStatus.isPending ? "Updating..." : "Mark Shipped"}
           </button>
@@ -208,9 +197,9 @@ export function OrderActions({
 
       {/* Buyer: Confirm Delivery */}
       {role === "buyer" && status === "shipped" && (
-        <div className="rounded border border-zinc-800 p-4">
-          <h3 className="mb-3 font-semibold">Confirm Delivery</h3>
-          <p className="mb-3 text-sm text-zinc-400">
+        <div className="glass-card">
+          <h3 className="mb-3 font-display font-semibold text-[var(--text-heading)]">Confirm Delivery</h3>
+          <p className="mb-3 text-sm text-[var(--text-muted)]">
             Confirm that you have received the item.
           </p>
           <button
@@ -218,7 +207,7 @@ export function OrderActions({
               updateStatus.mutate({ id: orderId, status: "delivered" })
             }
             disabled={updateStatus.isPending}
-            className="rounded bg-white px-4 py-2 font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
+            className={goldButtonClass}
           >
             {updateStatus.isPending ? "Updating..." : "Confirm Delivery"}
           </button>
@@ -227,10 +216,10 @@ export function OrderActions({
 
       {/* Buyer: Leave Review */}
       {role === "buyer" && status === "delivered" && !hasReview && (
-        <div className="rounded border border-zinc-800 p-4">
-          <h3 className="mb-3 font-semibold">Leave a Review</h3>
+        <div className="glass-card">
+          <h3 className="mb-3 font-display font-semibold text-[var(--text-heading)]">Leave a Review</h3>
           <div className="mb-3">
-            <label className="mb-1 block text-sm font-medium text-zinc-300">
+            <label className="mb-1 block text-sm font-medium text-[var(--text-body)]">
               Rating
             </label>
             <div className="flex gap-2">
@@ -239,10 +228,10 @@ export function OrderActions({
                   key={n}
                   type="button"
                   onClick={() => setRating(n)}
-                  className={`h-10 w-10 rounded border text-sm font-semibold transition ${
+                  className={`h-10 w-10 rounded-xl border text-sm font-semibold transition ${
                     rating === n
-                      ? "border-white bg-white text-black"
-                      : "border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                      ? "border-[#D4AF37] bg-[#D4AF37] text-black"
+                      : "border-[var(--divider)] text-[var(--text-body)] hover:border-[#D4AF37]/30"
                   }`}
                 >
                   {n}
@@ -253,7 +242,7 @@ export function OrderActions({
           <div className="mb-3">
             <label
               htmlFor="comment"
-              className="block text-sm font-medium text-zinc-300"
+              className="block text-sm font-medium text-[var(--text-body)]"
             >
               Comment (optional)
             </label>
@@ -276,7 +265,7 @@ export function OrderActions({
               })
             }
             disabled={createReview.isPending}
-            className="rounded bg-white px-4 py-2 font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
+            className={goldButtonClass}
           >
             {createReview.isPending ? "Submitting..." : "Submit Review"}
           </button>

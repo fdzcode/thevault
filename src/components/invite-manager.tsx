@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
+import { goldButtonClass } from "~/lib/constants";
 
 interface InviteCode {
   code: string;
@@ -43,14 +44,18 @@ export function InviteManager({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
-          Your Invite Codes ({codes.length}/{maxCodes})
-        </h2>
+      <div className="mb-5 flex items-center justify-between">
+        <div>
+          <p className="text-muted text-xs tracking-widest uppercase mb-1">Invite Codes</p>
+          <h2 className="font-display text-2xl font-light text-[var(--text-heading)]">
+            <span className="gradient-text">{codes.length}</span>
+            <span className="text-[var(--text-muted)] text-lg">/{maxCodes}</span>
+          </h2>
+        </div>
         <button
           onClick={() => generateInvite.mutate()}
           disabled={generateInvite.isPending || codes.length >= maxCodes}
-          className="rounded bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
+          className={goldButtonClass}
         >
           {generateInvite.isPending ? "Generating..." : "Generate Code"}
         </button>
@@ -63,32 +68,42 @@ export function InviteManager({
       )}
 
       {codes.length === 0 ? (
-        <p className="text-sm text-zinc-500">
-          No invite codes yet. Generate one to invite someone.
-        </p>
+        <div className="glass-card rounded-2xl p-8 text-center">
+          <p className="font-display text-lg italic text-[var(--text-muted)]">
+            No invite codes yet. Generate one to invite someone.
+          </p>
+        </div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {codes.map((invite) => (
             <li
               key={invite.code}
-              className="flex items-center justify-between rounded border border-zinc-800 px-4 py-3"
+              className="glass-card rounded-2xl p-6 flex items-center justify-between"
             >
-              <div>
-                <span className="font-mono text-sm font-semibold">
-                  {invite.code}
-                </span>
+              <div className="flex items-center gap-4">
+                {/* Status dot */}
                 {invite.used ? (
-                  <span className="ml-3 text-xs text-zinc-500">
-                    Used{invite.usedBy?.name ? ` by ${invite.usedBy.name}` : ""}
-                  </span>
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--text-muted)]" />
                 ) : (
-                  <span className="ml-3 text-xs text-green-400">Available</span>
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#D4AF37] gold-pulse" />
                 )}
+                <div>
+                  <span className="font-display text-2xl text-amber-500 tracking-wide">
+                    {invite.code}
+                  </span>
+                  {invite.used ? (
+                    <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                      Used{invite.usedBy?.name ? ` by ${invite.usedBy.name}` : ""}
+                    </p>
+                  ) : (
+                    <p className="mt-0.5 text-xs text-emerald-400">Available</p>
+                  )}
+                </div>
               </div>
               {!invite.used && (
                 <button
                   onClick={() => handleCopy(invite.code)}
-                  className="text-xs text-zinc-400 transition hover:text-white"
+                  className="glass-card rounded-xl px-4 py-2 text-xs font-medium text-[var(--text-body)] transition hover:border-[#D4AF37]/40 hover:text-[#D4AF37]"
                 >
                   {copiedCode === invite.code ? "Copied!" : "Copy"}
                 </button>

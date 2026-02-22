@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { EntryGate } from "~/components/entry-gate";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,18 +35,23 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 text-white">
-      <div className="w-full max-w-sm space-y-6 px-4">
+    <EntryGate>
+      <div className="glass-card rounded-2xl p-8 space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold">Sign In</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <h1 className="font-display text-3xl font-light gradient-text tracking-wide">
+            Sign In
+          </h1>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
             Welcome back to The Vault
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-300">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-[var(--text-body)] mb-1"
+            >
               Email
             </label>
             <input
@@ -54,13 +60,16 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+              className="input-bg w-full rounded-xl border border-[var(--input-border)] px-4 py-3 text-[var(--text-heading)] placeholder-[var(--input-placeholder)] transition focus:border-[#D4AF37] focus:outline-none focus:ring-1 focus:ring-[#D4AF37]/30"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-zinc-300">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-[var(--text-body)] mb-1"
+            >
               Password
             </label>
             <input
@@ -69,31 +78,32 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+              className="input-bg w-full rounded-xl border border-[var(--input-border)] px-4 py-3 text-[var(--text-heading)] placeholder-[var(--input-placeholder)] transition focus:border-[#D4AF37] focus:outline-none focus:ring-1 focus:ring-[#D4AF37]/30"
               placeholder="********"
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-400">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-400">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded bg-white px-4 py-2 font-semibold text-black transition hover:bg-zinc-200 disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#B8960C] px-4 py-3 font-semibold text-black transition hover:shadow-lg hover:shadow-[#D4AF37]/20 disabled:opacity-50"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        <p className="text-center text-sm text-zinc-500">
+        <p className="text-center text-sm text-[var(--text-muted)]">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-white underline hover:text-zinc-300">
+          <Link
+            href="/register"
+            className="text-[#D4AF37] transition hover:text-[#F4E5C3]"
+          >
             Register with invite code
           </Link>
         </p>
       </div>
-    </main>
+    </EntryGate>
   );
 }

@@ -131,6 +131,7 @@ model Listing {
     price       Int // cents
     category    String // validated by Zod: apparel, accessories, art, collectibles, footwear, jewelry, prints, other
     condition   String // validated by Zod: new, like_new, good, fair
+    listingType String   @default("for_sale") // for_sale, trade, both
     status      String   @default("active") // active, sold, cancelled
     tags        String   @default("") // comma-separated
     images      String   @default("[]") // JSON array of URLs

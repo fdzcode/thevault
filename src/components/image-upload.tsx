@@ -28,7 +28,7 @@ export function ImageUpload({
     "image/webp",
     "image/gif",
   ];
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
   const validateFiles = useCallback(
     (files: File[]): File[] | null => {
@@ -70,7 +70,6 @@ export function ImageUpload({
       const validated = validateFiles(files);
       if (!validated || validated.length === 0) return;
 
-      // Create preview URLs
       const newPreviews = validated.map((file) => ({
         file,
         previewUrl: URL.createObjectURL(file),
@@ -132,7 +131,6 @@ export function ImageUpload({
           err instanceof Error ? err.message : "Upload failed. Try again.",
         );
       } finally {
-        // Clean up preview URLs
         newPreviews.forEach((p) => URL.revokeObjectURL(p.previewUrl));
         setPreviews((prev) =>
           prev.filter(
@@ -176,7 +174,6 @@ export function ImageUpload({
       if (selectedFiles.length > 0) {
         void uploadFiles(selectedFiles);
       }
-      // Reset the input so the same file can be selected again
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -205,14 +202,14 @@ export function ImageUpload({
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={handleClickZone}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-8 transition ${
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-8 transition ${
           dragActive
-            ? "border-zinc-400 bg-zinc-800/50"
-            : "border-zinc-700 bg-zinc-900 hover:border-zinc-500 hover:bg-zinc-800/30"
+            ? "border-amber-600/50 bg-amber-600/5"
+            : "border-amber-600/20 bg-[var(--input-bg)] hover:border-amber-600/50 hover:bg-[var(--glass-card-bg)]"
         } ${value.length >= maxImages ? "pointer-events-none opacity-50" : ""}`}
       >
         <svg
-          className="mb-2 h-8 w-8 text-zinc-500"
+          className="mb-2 h-8 w-8 text-[var(--text-muted)]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -224,14 +221,14 @@ export function ImageUpload({
             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
           />
         </svg>
-        <p className="text-sm text-zinc-400">
-          <span className="font-medium text-zinc-300">Click to upload</span> or
+        <p className="text-sm text-[var(--text-muted)]">
+          <span className="font-medium text-[var(--text-heading)]">Click to upload</span> or
           drag and drop
         </p>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-[var(--text-muted)]">
           JPEG, PNG, WebP, or GIF (max 5MB each)
         </p>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-[var(--text-muted)]">
           {value.length} / {maxImages} images
         </p>
       </div>
@@ -248,26 +245,26 @@ export function ImageUpload({
       {/* Upload progress */}
       {uploading && (
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-xs text-zinc-400">
+          <div className="flex items-center justify-between text-xs text-muted">
             <span>Uploading...</span>
             <span>{progress}%</span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800/50">
             <div
-              className="h-full rounded-full bg-zinc-300 transition-all duration-200"
+              className="h-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F4E5C3] transition-all duration-200"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       )}
 
-      {/* Previews of files being uploaded */}
+      {/* Previews */}
       {previews.length > 0 && (
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-6">
           {previews.map((p, i) => (
             <div
               key={`preview-${i}`}
-              className="relative aspect-square overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800"
+              className="relative aspect-square overflow-hidden rounded-xl border border-[var(--divider)] bg-[var(--card-bg)]"
             >
               <img
                 src={p.previewUrl}
@@ -275,7 +272,7 @@ export function ImageUpload({
                 className="h-full w-full object-cover opacity-50"
               />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent" />
               </div>
             </div>
           ))}
@@ -288,7 +285,7 @@ export function ImageUpload({
           {value.map((url, i) => (
             <div
               key={`uploaded-${i}`}
-              className="group relative aspect-square overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800"
+              className="group relative aspect-square overflow-hidden rounded-xl border border-[var(--divider)] bg-[var(--card-bg)]"
             >
               <img
                 src={url}
@@ -304,22 +301,12 @@ export function ImageUpload({
                 className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-xs text-white opacity-0 transition hover:bg-red-600 group-hover:opacity-100"
                 aria-label={`Remove image ${i + 1}`}
               >
-                <svg
-                  className="h-3.5 w-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
               {i === 0 && value.length > 1 && (
-                <span className="absolute bottom-1 left-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">
+                <span className="absolute bottom-1 left-1 rounded-lg bg-[#D4AF37] px-1.5 py-0.5 text-[10px] font-semibold text-black">
                   Cover
                 </span>
               )}
@@ -328,7 +315,6 @@ export function ImageUpload({
         </div>
       )}
 
-      {/* Error message */}
       {error && <p className="text-sm text-red-400">{error}</p>}
     </div>
   );
