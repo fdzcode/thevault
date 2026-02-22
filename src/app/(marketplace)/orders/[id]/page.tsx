@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
+import { OrderActions } from "~/components/order-actions";
 
 export default async function OrderDetailPage({
   params,
@@ -9,7 +10,7 @@ export default async function OrderDetailPage({
 }) {
   const session = await auth();
   if (!session) {
-    redirect("/api/auth/signin");
+    redirect("/login");
   }
 
   const { id } = await params;
@@ -20,6 +21,8 @@ export default async function OrderDetailPage({
   } catch {
     notFound();
   }
+
+  const role = session.user.id === order.buyerId ? "buyer" : "seller";
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -42,6 +45,12 @@ export default async function OrderDetailPage({
           </p>
         )}
       </div>
+      <OrderActions
+        orderId={order.id}
+        role={role}
+        status={order.status}
+        hasReview={!!order.review}
+      />
     </main>
   );
 }

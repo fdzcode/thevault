@@ -6,7 +6,7 @@ export default async function OrdersPage() {
   const session = await auth();
 
   if (!session) {
-    redirect("/api/auth/signin");
+    redirect("/login");
   }
 
   const { orders } = await api.order.getMyOrders({ role: "buyer" });

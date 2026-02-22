@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
+import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
+import { BuyButton } from "~/components/buy-button";
 
 export default async function ListingDetailPage({
   params,
@@ -8,12 +10,19 @@ export default async function ListingDetailPage({
 }) {
   const { id } = await params;
 
+  const session = await auth();
+
   let listing;
   try {
     listing = await api.listing.getById({ id });
   } catch {
     notFound();
   }
+
+  const canBuy =
+    !!session &&
+    session.user.id !== listing.sellerId &&
+    listing.status === "active";
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -31,9 +40,10 @@ export default async function ListingDetailPage({
       <p className="mb-6 whitespace-pre-wrap text-zinc-300">
         {listing.description}
       </p>
-      <p className="text-sm text-zinc-500">
+      <p className="mb-6 text-sm text-zinc-500">
         Sold by {listing.seller.profile?.displayName ?? listing.seller.name}
       </p>
+      {canBuy && <BuyButton listingId={listing.id} />}
     </main>
   );
 }

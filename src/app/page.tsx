@@ -31,7 +31,7 @@ export default async function Home() {
             </Link>
           ) : (
             <Link
-              href="/api/auth/signin"
+              href="/login"
               className="rounded-full bg-white/10 px-8 py-3 font-semibold no-underline transition hover:bg-white/20"
             >
               Sign in

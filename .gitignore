@@ -47,3 +47,7 @@ yarn-error.log*
 
 # generated prisma client
 /generated
+
+# reference docs
+clout-mall-invitation-system.html
+vault-v7.html
