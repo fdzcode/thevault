@@ -1,0 +1,19 @@
+import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { profileRouter } from "~/server/api/routers/profile";
+import { listingRouter } from "~/server/api/routers/listing";
+import { orderRouter } from "~/server/api/routers/order";
+import { paymentRouter } from "~/server/api/routers/payment";
+import { reviewRouter } from "~/server/api/routers/review";
+
+export const appRouter = createTRPCRouter({
+  profile: profileRouter,
+  listing: listingRouter,
+  order: orderRouter,
+  payment: paymentRouter,
+  review: reviewRouter,
+});
+
+// export type definition of API
+export type AppRouter = typeof appRouter;
+
+export const createCaller = createCallerFactory(appRouter);
