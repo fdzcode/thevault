@@ -73,7 +73,7 @@ function ListingsContent() {
 
   const searchInput = {
     query: query || undefined,
-    listingType: (listingType || undefined) as "for_sale" | "trade" | "both" | undefined,
+    listingType: listingType || undefined,
     category: category || undefined,
     condition: condition || undefined,
     minPrice: minPrice ? Math.round(parseFloat(minPrice) * 100) : undefined,
