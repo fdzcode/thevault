@@ -22,7 +22,7 @@ export function MobileNav({
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="lg:hidden">
+    <div className="md:hidden">
       {/* Hamburger Button */}
       <button
         onClick={() => setOpen(!open)}

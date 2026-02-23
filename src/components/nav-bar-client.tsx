@@ -25,7 +25,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className={`rounded-lg px-4 py-2 text-sm tracking-wide transition-all ${
+      className={`rounded-lg px-3 py-1.5 text-xs md:text-sm tracking-wide transition-all whitespace-nowrap ${
         active
           ? "border border-amber-600/30 bg-amber-600/20 text-amber-500"
           : "text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-white/5"
@@ -67,7 +67,7 @@ export function NavBarClient({
 
   return (
     <nav className="header-bg sticky top-0 z-50 border-b border-[var(--header-border)] bg-[var(--header-bg)] backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-8 md:py-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-600 to-amber-800">
@@ -85,7 +85,7 @@ export function NavBarClient({
             </svg>
           </div>
           <span
-            className="font-display text-xl font-light text-amber-600"
+            className="font-display text-lg md:text-xl font-light text-amber-600 hidden sm:inline"
             style={{ letterSpacing: "0.2em" }}
           >
             THE VAULT
@@ -93,7 +93,7 @@ export function NavBarClient({
         </Link>
 
         {/* Desktop Nav Links */}
-        <div className="hidden items-center gap-1 lg:flex">
+        <div className="hidden items-center gap-0.5 md:flex">
           <NavLink href="/listings" active={pathname === "/listings"}>
             Market
           </NavLink>
@@ -134,7 +134,7 @@ export function NavBarClient({
         </div>
 
         {/* Desktop Right Side */}
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-2 md:flex">
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
