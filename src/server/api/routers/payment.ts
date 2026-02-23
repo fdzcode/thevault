@@ -44,6 +44,9 @@ export const paymentRouter = createTRPCRouter({
       });
 
 
+      const baseUrl =
+        process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+
       const session = await getStripe().checkout.sessions.create({
         mode: "payment",
         line_items: [
@@ -63,8 +66,8 @@ export const paymentRouter = createTRPCRouter({
           orderId: order.id,
           listingId: listing.id,
         },
-        success_url: `${process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? "" : "http://localhost:3000"}/orders/${order.id}?success=true`,
-        cancel_url: `${process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? "" : "http://localhost:3000"}/listings/${listing.id}?cancelled=true`,
+        success_url: `${baseUrl}/orders/${order.id}?success=true`,
+        cancel_url: `${baseUrl}/listings/${listing.id}?cancelled=true`,
       });
 
       await ctx.db.order.update({

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { verifyIpnSignature } from "~/lib/nowpayments";
 import { db } from "~/server/db";
+import { handlePaymentConfirmed } from "~/server/services/orders";
 
 interface IpnPayload {
   payment_id: number;
@@ -40,15 +41,19 @@ export async function POST(req: NextRequest) {
   switch (payment_status) {
     case "finished":
     case "confirmed": {
-      // Payment successful — mark order as paid and listing as sold
+      // Use updateMany with a status precondition so concurrent/duplicate
+      // webhook deliveries are no-ops instead of double-crediting the
+      // seller's balance (eliminates the TOCTOU race of checking status
+      // outside the transaction).
       const order = await db.order.findUnique({
         where: { id: order_id },
+        select: { listingId: true },
       });
 
-      if (order?.status === "pending") {
-        await db.$transaction([
-          db.order.update({
-            where: { id: order_id },
+      if (order) {
+        const [updated] = await db.$transaction([
+          db.order.updateMany({
+            where: { id: order_id, status: "pending" },
             data: {
               status: "paid",
               cryptoPaymentId: String(payment_id),
@@ -63,37 +68,19 @@ export async function POST(req: NextRequest) {
           }),
         ]);
 
-        // Credit seller balance with payout amount
-        const payoutAmount = order.sellerPayoutAmount || order.totalAmount;
-        await db.sellerBalance.upsert({
-          where: { userId: order.sellerId },
-          create: {
-            userId: order.sellerId,
-            pendingAmount: payoutAmount,
-            availableAmount: 0,
-            totalEarned: payoutAmount,
-          },
-          update: {
-            pendingAmount: { increment: payoutAmount },
-            totalEarned: { increment: payoutAmount },
-          },
-        });
+        if (updated.count > 0) {
+          await handlePaymentConfirmed(db, order_id);
+        }
       }
       break;
     }
 
     case "expired":
     case "failed": {
-      const order = await db.order.findUnique({
-        where: { id: order_id },
+      await db.order.updateMany({
+        where: { id: order_id, status: "pending" },
+        data: { status: "cancelled" },
       });
-
-      if (order?.status === "pending") {
-        await db.order.update({
-          where: { id: order_id },
-          data: { status: "cancelled" },
-        });
-      }
       break;
     }
 

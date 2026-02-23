@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Skeleton } from "~/components/skeleton";
+import { safeParseImages } from "~/lib/constants";
+import { OrderStatusBadge } from "~/components/ui/status-badge";
 
 const STATUS_TABS = [
   { label: "All", value: undefined },
@@ -14,14 +16,6 @@ const STATUS_TABS = [
   { label: "Delivered", value: "delivered" },
   { label: "Cancelled", value: "cancelled" },
 ] as const;
-
-const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-  paid: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-  shipped: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
-  delivered: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-  cancelled: "bg-red-500/10 text-red-400 border border-red-500/20",
-};
 
 function OrderCardSkeleton() {
   return (
@@ -120,9 +114,7 @@ export default function SalesPage() {
       ) : (
         <ul className="space-y-4">
           {orders.map((order) => {
-            const images = JSON.parse(
-              order.listing.images,
-            ) as string[];
+            const images = safeParseImages(order.listing.images);
             const firstImage = images[0];
 
             return (
@@ -165,12 +157,7 @@ export default function SalesPage() {
                       <span className="font-display text-xl font-light text-amber-500">
                         ${(order.totalAmount / 100).toFixed(2)}
                       </span>
-                      <span
-                        className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status] ?? "bg-[var(--glass-card-bg)] text-[var(--text-muted)] border border-[var(--divider)]"}`}
-                      >
-                        {order.status.charAt(0).toUpperCase() +
-                          order.status.slice(1)}
-                      </span>
+                      <OrderStatusBadge status={order.status} />
                     </div>
                   </div>
                 </Link>

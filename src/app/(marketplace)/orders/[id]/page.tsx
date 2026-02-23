@@ -4,7 +4,8 @@ import Link from "next/link";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { OrderActions } from "~/components/order-actions";
-import type { } from "~/components/ui/status-badge";
+import { safeParseImages } from "~/lib/constants";
+import { OrderStatusBadge, PaymentMethodBadge } from "~/components/ui/status-badge";
 
 const ESCROW_STEPS = ["pending", "paid", "shipped", "delivered"] as const;
 
@@ -60,23 +61,6 @@ function EscrowTimeline({ currentStatus }: { currentStatus: string }) {
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    pending: "bg-yellow-400/10 text-yellow-400 border border-yellow-400/20",
-    paid: "bg-blue-400/10 text-blue-400 border border-blue-400/20",
-    shipped: "bg-purple-400/10 text-purple-400 border border-purple-400/20",
-    delivered: "bg-green-400/10 text-green-400 border border-green-400/20",
-    cancelled: "bg-red-400/10 text-red-400 border border-red-400/20",
-  };
-  return (
-    <span
-      className={`badge ${colors[status] ?? "bg-[var(--glass-card-bg)] text-[var(--text-muted)] border border-[var(--divider)]"}`}
-    >
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
-  );
-}
-
 export default async function OrderDetailPage({
   params,
 }: {
@@ -97,7 +81,7 @@ export default async function OrderDetailPage({
   }
 
   const role = session.user.id === order.buyerId ? "buyer" : "seller";
-  const images = JSON.parse(order.listing.images) as string[];
+  const images = safeParseImages(order.listing.images);
   const firstImage = images[0];
 
   const canDispute =
@@ -115,16 +99,8 @@ export default async function OrderDetailPage({
           Trade <span className="gradient-text">#{order.id.slice(-8)}</span>
         </h1>
         <div className="mt-3 flex items-center justify-center gap-3">
-          <StatusBadge status={order.status} />
-          <span
-            className={`badge ${
-              order.paymentMethod === "crypto"
-                ? "bg-purple-400/10 text-purple-300 border border-purple-400/20"
-                : "bg-blue-400/10 text-blue-300 border border-blue-400/20"
-            }`}
-          >
-            {order.paymentMethod === "crypto" ? "Crypto" : "Stripe"}
-          </span>
+          <OrderStatusBadge status={order.status} />
+          <PaymentMethodBadge method={order.paymentMethod} />
         </div>
       </div>
 

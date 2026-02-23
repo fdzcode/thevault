@@ -7,31 +7,10 @@ import { ImageUpload } from "~/components/image-upload";
 import {
   HIGH_VALUE_THRESHOLD_CENTS,
   HIGH_VALUE_MIN_PHOTOS,
+  CATEGORIES,
+  CONDITIONS,
+  LISTING_TYPES,
 } from "~/lib/constants";
-
-const CATEGORIES = [
-  { value: "apparel", label: "Apparel" },
-  { value: "accessories", label: "Accessories" },
-  { value: "art", label: "Art" },
-  { value: "collectibles", label: "Collectibles" },
-  { value: "footwear", label: "Footwear" },
-  { value: "jewelry", label: "Jewelry" },
-  { value: "prints", label: "Prints" },
-  { value: "other", label: "Other" },
-] as const;
-
-const CONDITIONS = [
-  { value: "new", label: "New", description: "Brand new, never worn or used, with tags" },
-  { value: "like_new", label: "Like New", description: "Worn once or twice, no visible flaws" },
-  { value: "good", label: "Good", description: "Gently used with minor signs of wear" },
-  { value: "fair", label: "Fair", description: "Noticeable wear, still fully functional" },
-] as const;
-
-const LISTING_TYPES = [
-  { value: "for_sale", label: "For Sale" },
-  { value: "trade", label: "Trade" },
-  { value: "both", label: "Both" },
-] as const;
 
 const STEPS = [
   { label: "Details" },

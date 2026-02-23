@@ -1,3 +1,16 @@
+/**
+ * Escapes HTML special characters to prevent injection in email templates.
+ * Must be applied to every user-supplied string before embedding in HTML.
+ */
+export function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function emailWrapper(content: string): string {
   return `<!DOCTYPE html>
 <html>
@@ -21,7 +34,7 @@ export function emailWrapper(content: string): string {
 }
 
 export function emailButton(text: string, url: string): string {
-  return `<a href="${url}" style="display:inline-block;background-color:#ffffff;color:#000000;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;margin-top:16px;">${text}</a>`;
+  return `<a href="${escapeHtml(url)}" style="display:inline-block;background-color:#ffffff;color:#000000;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;margin-top:16px;">${escapeHtml(text)}</a>`;
 }
 
 export function emailDivider(): string {
@@ -30,8 +43,8 @@ export function emailDivider(): string {
 
 export function emailDetailRow(label: string, value: string): string {
   return `<tr>
-    <td style="padding:4px 12px 4px 0;color:#a1a1aa;font-size:14px;white-space:nowrap;">${label}</td>
-    <td style="padding:4px 0;color:#ffffff;font-size:14px;">${value}</td>
+    <td style="padding:4px 12px 4px 0;color:#a1a1aa;font-size:14px;white-space:nowrap;">${escapeHtml(label)}</td>
+    <td style="padding:4px 0;color:#ffffff;font-size:14px;">${escapeHtml(value)}</td>
   </tr>`;
 }
 
