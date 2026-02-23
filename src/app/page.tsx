@@ -1,10 +1,26 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import { auth } from "~/server/auth";
+import { api } from "~/trpc/server";
 import { HomeSearch } from "~/components/home-search";
+import { safeParseImages } from "~/lib/constants";
 
 export default async function Home() {
   const session = await auth();
+
+  let featuredListings: Array<{
+    id: string;
+    title: string;
+    price: number;
+    images: string;
+  }> = [];
+  try {
+    const result = await api.listing.search({ limit: 4 });
+    featuredListings = result.listings;
+  } catch {
+    featuredListings = [];
+  }
 
   return (
     <main className="min-h-screen">
@@ -136,6 +152,60 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* Featured Listings */}
+      {featuredListings.length > 0 && (
+        <section className="mx-auto max-w-5xl px-4 pb-16">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="font-display text-3xl font-bold text-[var(--text-heading)]">
+              Featured in the <span className="gradient-text">Vault</span>
+            </h2>
+            <Link
+              href="/listings"
+              className="text-sm font-medium text-[#D4AF37] hover:text-[#F4E5C3] transition"
+            >
+              View All
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {featuredListings.map((listing) => {
+              const images = safeParseImages(listing.images);
+              const firstImage = images[0];
+              return (
+                <Link
+                  key={listing.id}
+                  href={`/listings/${listing.id}`}
+                  className="trade-card group"
+                >
+                  <div className="relative aspect-square bg-[var(--section-bg)]">
+                    {firstImage ? (
+                      <Image
+                        src={firstImage}
+                        alt={listing.title}
+                        fill
+                        className="object-cover transition group-hover:scale-105"
+                        sizes="(max-width: 640px) 50vw, 25vw"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-xs text-muted">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <p className="truncate text-sm font-medium text-[var(--text-heading)]">
+                      {listing.title}
+                    </p>
+                    <p className="text-xs text-[#D4AF37] mt-1">
+                      ${(listing.price / 100).toFixed(2)}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="border-t divider-line mt-8">

@@ -45,24 +45,30 @@ export function NavBarClient({
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on click outside
+  // Close dropdowns on click outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
         setMoreOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
     }
-    if (moreOpen) {
+    if (moreOpen || notifOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
-  }, [moreOpen]);
+  }, [moreOpen, notifOpen]);
 
-  // Close dropdown on navigation
+  // Close dropdowns on navigation
   useEffect(() => {
     setMoreOpen(false);
+    setNotifOpen(false);
   }, [pathname]);
 
   const moreLinks = [
@@ -239,6 +245,53 @@ export function NavBarClient({
 
           {isAuthenticated ? (
             <>
+              {/* Notification Bell */}
+              <div ref={notifRef} className="relative">
+                <button
+                  onClick={() => setNotifOpen((v) => !v)}
+                  className="relative flex items-center justify-center rounded-lg px-2.5 py-2 text-[var(--text-muted)] transition-all hover:bg-white/5 hover:text-amber-500"
+                  aria-label="Notifications"
+                >
+                  <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                  </svg>
+                  <span className="notif-dot" />
+                </button>
+
+                {/* Notification Panel */}
+                <div
+                  className={`absolute right-0 top-full mt-2 w-72 overflow-hidden rounded-xl border border-[var(--header-border)] shadow-xl shadow-black/20 backdrop-blur-xl transition-all duration-200 ${
+                    notifOpen
+                      ? "pointer-events-auto translate-y-0 opacity-100"
+                      : "pointer-events-none -translate-y-2 opacity-0"
+                  }`}
+                  style={{
+                    background:
+                      theme === "dark"
+                        ? "rgba(20, 20, 20, 0.92)"
+                        : "rgba(255, 252, 240, 0.95)",
+                  }}
+                >
+                  <div className="border-b border-[var(--divider)] px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+                      Notifications
+                    </p>
+                  </div>
+                  <div className="p-3 space-y-1">
+                    <div className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition hover:bg-white/5">
+                      <span className="mt-1 msg-unread-dot" />
+                      <div>
+                        <p className="text-sm text-[var(--text-heading)]">Welcome to The Vault</p>
+                        <p className="text-xs text-muted mt-0.5">You&apos;re now a verified member.</p>
+                      </div>
+                    </div>
+                    <div className="px-3 py-4 text-center">
+                      <p className="text-xs text-muted">No other notifications</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* The Exchange CTA */}
               <Link
                 href="/listings"

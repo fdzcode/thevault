@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { api } from "~/trpc/server";
 import { safeParseImages } from "~/lib/constants";
+import { TrustLevel } from "~/components/trust-level";
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -159,6 +160,11 @@ export default async function PublicProfilePage({
           </div>
           <div className="text-muted text-xs mt-1 uppercase tracking-wide">Rep</div>
         </div>
+      </div>
+
+      {/* Trust Level */}
+      <div className="mt-6">
+        <TrustLevel tradeCount={reviewData?.totalReviews ?? 0} />
       </div>
 
       {/* Bio Card */}

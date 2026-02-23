@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
 import { InviteManager } from "~/components/invite-manager";
+import { ReferralTree } from "~/components/referral-tree";
 import { DEFAULT_INVITE_LIMIT } from "~/server/auth/invite-utils";
 
 export default async function InvitesPage() {
@@ -77,42 +78,18 @@ export default async function InvitesPage() {
         </div>
 
         {/* Referral Tree */}
-        {referralTree.length > 0 && (
-          <div>
-            <p className="text-muted text-xs tracking-widest uppercase mb-2">Your Network</p>
-            <h2 className="font-display text-2xl font-light text-[var(--text-heading)] mb-4">
-              Referral <span className="gradient-text">Chain</span>
-            </h2>
-            <ul className="space-y-3">
-              {referralTree.map((invitee) => (
-                <li key={invitee.id} className="glass-card rounded-2xl p-5">
-                  <p className="font-semibold text-[var(--text-heading)]">
-                    {invitee.name}
-                    {invitee.memberNumber && (
-                      <span className="ml-2 font-display text-sm text-[#D4AF37]">
-                        #{invitee.memberNumber}
-                      </span>
-                    )}
-                  </p>
-                  {invitee.invitees.length > 0 && (
-                    <ul className="mt-3 ml-4 space-y-2 border-l-2 border-[#D4AF37]/20 pl-4">
-                      {invitee.invitees.map((sub) => (
-                        <li key={sub.id} className="text-sm text-[var(--text-body)]">
-                          {sub.name}
-                          {sub.memberNumber && (
-                            <span className="ml-2 font-display text-xs text-[#D4AF37]">
-                              #{sub.memberNumber}
-                            </span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
+        <div>
+          <p className="text-muted text-xs tracking-widest uppercase mb-2">Your Network</p>
+          <h2 className="font-display text-2xl font-light text-[var(--text-heading)] mb-4">
+            Referral <span className="gradient-text">Tree</span>
+          </h2>
+          <div className="glass-card rounded-2xl p-6">
+            <ReferralTree
+              invitees={referralTree}
+              openSlots={inviteCodes.filter((c) => !c.used).length}
+            />
           </div>
-        )}
+        </div>
       </div>
 
       {/* Footer */}
