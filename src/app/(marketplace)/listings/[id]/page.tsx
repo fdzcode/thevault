@@ -6,6 +6,11 @@ import { BuyButton } from "~/components/buy-button";
 import { VouchButton } from "~/components/vouch-button";
 import { WishlistButton } from "~/components/wishlist-button";
 import { MessageSellerButton } from "~/components/message-seller-button";
+import {
+  CONDITION_BADGE_STYLES,
+  CONDITION_LABELS,
+  safeParseImages,
+} from "~/lib/constants";
 
 export default async function ListingDetailPage({
   params,
@@ -28,28 +33,7 @@ export default async function ListingDetailPage({
     session.user.id !== listing.sellerId &&
     listing.status === "active";
 
-  const conditionBadge: Record<string, string> = {
-    new: "badge-deadstock",
-    like_new: "badge-excellent",
-    good: "badge-good",
-    fair: "badge-fair",
-  };
-
-  const conditionLabel: Record<string, string> = {
-    new: "Deadstock / New",
-    like_new: "Like New",
-    good: "Good",
-    fair: "Fair",
-  };
-
-  const images: string[] = (() => {
-    try {
-      const parsed = JSON.parse(String(listing.images)) as string[];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  })();
+  const images = safeParseImages(listing.images);
 
   const sellerName =
     listing.seller.profile?.displayName ?? listing.seller.name ?? "Member";
@@ -95,9 +79,9 @@ export default async function ListingDetailPage({
               {/* Condition badge overlay */}
               <div className="absolute top-4 left-4">
                 <span
-                  className={`badge ${conditionBadge[listing.condition] ?? ""}`}
+                  className={`badge ${CONDITION_BADGE_STYLES[listing.condition] ?? ""}`}
                 >
-                  {conditionLabel[listing.condition] ?? listing.condition.replace("_", " ")}
+                  {CONDITION_LABELS[listing.condition] ?? listing.condition.replace("_", " ")}
                 </span>
               </div>
               {/* Status badge overlay */}
@@ -156,7 +140,7 @@ export default async function ListingDetailPage({
                 {listing.title}
               </h1>
               <p className="text-muted italic font-display text-xl mb-8">
-                {conditionLabel[listing.condition] ?? listing.condition.replace("_", " ")}
+                {CONDITION_LABELS[listing.condition] ?? listing.condition.replace("_", " ")}
                 {listing.listingType !== "for_sale" && (
                   <span className="not-italic">
                     {" "}
@@ -186,7 +170,7 @@ export default async function ListingDetailPage({
             <div className="space-y-0">
               {[
                 { label: "Category", value: listing.category },
-                { label: "Condition", value: conditionLabel[listing.condition] ?? listing.condition.replace("_", " ") },
+                { label: "Condition", value: CONDITION_LABELS[listing.condition] ?? listing.condition.replace("_", " ") },
                 { label: "Type", value: listing.listingType === "for_sale" ? "For Sale" : listing.listingType === "trade" ? "Trade" : "Sale or Trade" },
                 { label: "Status", value: listing.status.charAt(0).toUpperCase() + listing.status.slice(1) },
                 ...(listing.tags ? [{ label: "Tags", value: listing.tags }] : []),

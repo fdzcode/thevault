@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
-import { PLATFORM_FEE_PERCENT } from "~/lib/fees";
+import { PLATFORM_FEE_BPS } from "~/lib/constants";
 
 export default function WalletPage() {
   const [showPayoutForm, setShowPayoutForm] = useState(false);
@@ -124,7 +124,7 @@ export default function WalletPage() {
             Platform Fee Information
           </h2>
           <p className="text-sm text-[var(--text-muted)]">
-            The Vault charges a {PLATFORM_FEE_PERCENT}% commission on all sales.
+            The Vault charges a {PLATFORM_FEE_BPS / 100}% commission on all sales.
             When a buyer purchases your listing, the platform fee is deducted and
             the remaining amount is added to your pending balance. Once the buyer
             confirms delivery, funds move to your available balance and can be

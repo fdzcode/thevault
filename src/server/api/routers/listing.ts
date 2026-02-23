@@ -7,6 +7,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { paginateResults } from "~/server/api/paginate";
+import { safeParseImages } from "~/lib/constants";
 import {
   categoryEnum,
   conditionEnum,
@@ -84,7 +85,7 @@ export const listingRouter = createTRPCRouter({
       }
 
       const resolvedPrice = input.price ?? listing.price;
-      const resolvedImages = input.images ?? JSON.parse(listing.images) as string[];
+      const resolvedImages = input.images ?? safeParseImages(listing.images);
       if (resolvedPrice >= 690000 && resolvedImages.length < 3) {
         throw new TRPCError({
           code: "BAD_REQUEST",

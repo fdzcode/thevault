@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { api } from "~/trpc/server";
+import { safeParseImages } from "~/lib/constants";
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -187,7 +188,7 @@ export default async function PublicProfilePage({
       {listings.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8">
           {listings.map((listing) => {
-            const images = JSON.parse(listing.images) as string[];
+            const images = safeParseImages(listing.images);
             const firstImage = images[0];
             return (
               <Link

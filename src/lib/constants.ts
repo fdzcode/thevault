@@ -51,3 +51,75 @@ export const CONDITION_BADGE_STYLES: Record<string, string> = {
   good: "badge-good",
   fair: "badge-fair",
 };
+
+// Condition display labels
+export const CONDITION_LABELS: Record<string, string> = {
+  new: "Deadstock / New",
+  like_new: "Like New",
+  good: "Good",
+  fair: "Fair",
+};
+
+// Listing type badge classes
+export const LISTING_TYPE_BADGE_STYLES: Record<string, string> = {
+  for_sale: "badge-for-sale",
+  trade: "badge-trade",
+  both: "badge-excellent",
+};
+
+// ─── Dropdown / Filter Options ──────────────────────────────────────
+
+export const CATEGORIES = [
+  { value: "apparel", label: "Apparel" },
+  { value: "accessories", label: "Accessories" },
+  { value: "art", label: "Art" },
+  { value: "collectibles", label: "Collectibles" },
+  { value: "footwear", label: "Footwear" },
+  { value: "jewelry", label: "Jewelry" },
+  { value: "prints", label: "Prints" },
+  { value: "other", label: "Other" },
+] as const;
+
+export const CONDITIONS = [
+  { value: "new", label: "New", description: "Brand new, never worn or used, with tags" },
+  { value: "like_new", label: "Like New", description: "Worn once or twice, no visible flaws" },
+  { value: "good", label: "Good", description: "Gently used with minor signs of wear" },
+  { value: "fair", label: "Fair", description: "Noticeable wear, still fully functional" },
+] as const;
+
+export const LISTING_TYPES = [
+  { value: "for_sale", label: "For Sale" },
+  { value: "trade", label: "Trade" },
+  { value: "both", label: "Both" },
+] as const;
+
+export const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+] as const;
+
+// ─── Utilities ──────────────────────────────────────────────────────
+
+/**
+ * Safely parse a JSON-encoded images string into an array of URLs.
+ * Returns an empty array if parsing fails or the data is malformed.
+ */
+export function safeParseImages(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Look up a label from a value in an options array. */
+export function labelFor(
+  options: ReadonlyArray<{ value: string; label: string }>,
+  value: string,
+): string {
+  return options.find((o) => o.value === value)?.label ?? value;
+}

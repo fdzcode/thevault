@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { paginateResults } from "~/server/api/paginate";
 
 const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   const user = await ctx.db.user.findUnique({
@@ -81,13 +82,8 @@ export const adminRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (users.length > input.limit) {
-        const next = users.pop();
-        nextCursor = next?.id;
-      }
-
-      return { users, nextCursor };
+      const { items, nextCursor } = paginateResults(users, input.limit);
+      return { users: items, nextCursor };
     }),
 
   /** Update a user's role */
@@ -160,13 +156,8 @@ export const adminRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (listings.length > input.limit) {
-        const next = listings.pop();
-        nextCursor = next?.id;
-      }
-
-      return { listings, nextCursor };
+      const { items, nextCursor } = paginateResults(listings, input.limit);
+      return { listings: items, nextCursor };
     }),
 
   /** Force-remove a listing (set status to cancelled) */
@@ -229,13 +220,8 @@ export const adminRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (orders.length > input.limit) {
-        const next = orders.pop();
-        nextCursor = next?.id;
-      }
-
-      return { orders, nextCursor };
+      const { items, nextCursor } = paginateResults(orders, input.limit);
+      return { orders: items, nextCursor };
     }),
 
   /** List all disputes with pagination and status filter */
@@ -286,13 +272,8 @@ export const adminRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (disputes.length > input.limit) {
-        const next = disputes.pop();
-        nextCursor = next?.id;
-      }
-
-      return { disputes, nextCursor };
+      const { items, nextCursor } = paginateResults(disputes, input.limit);
+      return { disputes: items, nextCursor };
     }),
 
   /** Resolve a dispute */
@@ -357,13 +338,8 @@ export const adminRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (payoutRequests.length > input.limit) {
-        const next = payoutRequests.pop();
-        nextCursor = next?.id;
-      }
-
-      return { payoutRequests, nextCursor };
+      const { items, nextCursor } = paginateResults(payoutRequests, input.limit);
+      return { payoutRequests: items, nextCursor };
     }),
 
   /** Process (update) a payout request */

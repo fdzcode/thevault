@@ -4,6 +4,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
+import { paginateResults } from "~/server/api/paginate";
 
 export const wishlistRouter = createTRPCRouter({
   toggle: protectedProcedure
@@ -66,13 +67,8 @@ export const wishlistRouter = createTRPCRouter({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (items.length > input.limit) {
-        const next = items.pop();
-        nextCursor = next?.id;
-      }
-
-      return { items, nextCursor };
+      const { items: wishlistItems, nextCursor } = paginateResults(items, input.limit);
+      return { items: wishlistItems, nextCursor };
     }),
 
   isWishlisted: protectedProcedure

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
+import { safeParseImages } from "~/lib/constants";
 
 export default function WishlistPage() {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -77,13 +78,7 @@ export default function WishlistPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {allItems.map((item) => {
                 const listing = item.listing;
-                const images: string[] = (() => {
-                  try {
-                    return JSON.parse(listing.images) as string[];
-                  } catch {
-                    return [];
-                  }
-                })();
+                const images = safeParseImages(listing.images);
 
                 return (
                   <div

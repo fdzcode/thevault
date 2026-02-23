@@ -5,66 +5,24 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useState, useEffect, useRef, useCallback } from "react";
 import { api } from "~/trpc/react";
-
-const CATEGORIES = [
-  { value: "apparel", label: "Apparel" },
-  { value: "accessories", label: "Accessories" },
-  { value: "art", label: "Art" },
-  { value: "collectibles", label: "Collectibles" },
-  { value: "footwear", label: "Footwear" },
-  { value: "jewelry", label: "Jewelry" },
-  { value: "prints", label: "Prints" },
-  { value: "other", label: "Other" },
-] as const;
-
-const CONDITIONS = [
-  { value: "new", label: "New" },
-  { value: "like_new", label: "Like New" },
-  { value: "good", label: "Good" },
-  { value: "fair", label: "Fair" },
-] as const;
-
-const LISTING_TYPES = [
-  { value: "", label: "All" },
-  { value: "for_sale", label: "For Sale" },
-  { value: "trade", label: "Trade" },
-  { value: "both", label: "Both" },
-] as const;
-
-const SORT_OPTIONS = [
-  { value: "newest", label: "Newest" },
-  { value: "oldest", label: "Oldest" },
-  { value: "price_asc", label: "Price: Low to High" },
-  { value: "price_desc", label: "Price: High to Low" },
-] as const;
+import {
+  CATEGORIES,
+  CONDITIONS,
+  LISTING_TYPES,
+  SORT_OPTIONS,
+  CONDITION_BADGE_STYLES,
+  LISTING_TYPE_BADGE_STYLES,
+  safeParseImages,
+  labelFor,
+} from "~/lib/constants";
 
 type CategoryValue = (typeof CATEGORIES)[number]["value"];
 type ConditionValue = (typeof CONDITIONS)[number]["value"];
 type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 type ListingTypeValue = "for_sale" | "trade" | "both" | "";
 
-function conditionLabel(value: string): string {
-  const found = CONDITIONS.find((c) => c.value === value);
-  return found ? found.label : value;
-}
-
-function categoryLabel(value: string): string {
-  const found = CATEGORIES.find((c) => c.value === value);
-  return found ? found.label : value;
-}
-
-const CONDITION_BADGE: Record<string, string> = {
-  new: "badge-deadstock",
-  like_new: "badge-excellent",
-  good: "badge-good",
-  fair: "badge-fair",
-};
-
-const LISTING_TYPE_BADGE: Record<string, string> = {
-  for_sale: "badge-for-sale",
-  trade: "badge-trade",
-  both: "badge-excellent",
-};
+// "All" prepended for the filter dropdown
+const LISTING_TYPE_FILTER_OPTIONS = [{ value: "", label: "All" }, ...LISTING_TYPES] as const;
 
 function listingTypeLabel(value: string): string {
   if (value === "for_sale") return "For Sale";
@@ -115,7 +73,7 @@ function ListingsContent() {
 
   const searchInput = {
     query: query || undefined,
-    listingType: (listingType as "for_sale" | "trade" | "both" | undefined) ?? undefined,
+    listingType: (listingType || undefined) as "for_sale" | "trade" | "both" | undefined,
     category: category || undefined,
     condition: condition || undefined,
     minPrice: minPrice ? Math.round(parseFloat(minPrice) * 100) : undefined,
@@ -226,7 +184,7 @@ function ListingsContent() {
         {/* Listing Type Filter Pills + List a Piece CTA */}
         <div className="mb-6 flex flex-wrap items-center gap-3">
           <div className="flex flex-wrap gap-2">
-            {LISTING_TYPES.map((t) => (
+            {LISTING_TYPE_FILTER_OPTIONS.map((t) => (
               <button
                 key={t.value}
                 onClick={() => setListingType(t.value as ListingTypeValue)}
@@ -397,12 +355,7 @@ function ListingsContent() {
           <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {allListings.map((listing) => {
-                let images: string[] = [];
-                try {
-                  images = JSON.parse(listing.images) as string[];
-                } catch {
-                  // ignore
-                }
+                const images = safeParseImages(listing.images);
                 const firstImage = images[0];
                 const sellerName =
                   listing.seller.profile?.displayName ??
@@ -433,18 +386,18 @@ function ListingsContent() {
                         </div>
                       )}
                       {/* Condition badge — top-left */}
-                      <span className={`badge ${CONDITION_BADGE[listing.condition] ?? ""} !text-[10px] absolute top-2 left-2`}>
-                        {conditionLabel(listing.condition)}
+                      <span className={`badge ${CONDITION_BADGE_STYLES[listing.condition] ?? ""} !text-[10px] absolute top-2 left-2`}>
+                        {labelFor(CONDITIONS,listing.condition)}
                       </span>
                       {/* Type badge — top-right */}
-                      <span className={`badge ${LISTING_TYPE_BADGE[listing.listingType] ?? "badge-for-sale"} !text-[10px] absolute top-2 right-2`}>
+                      <span className={`badge ${LISTING_TYPE_BADGE_STYLES[listing.listingType] ?? "badge-for-sale"} !text-[10px] absolute top-2 right-2`}>
                         {listingTypeLabel(listing.listingType)}
                       </span>
                     </div>
 
                     <div className="p-5">
                       <p className="text-xs text-[#D4AF37] tracking-widest uppercase mb-1">
-                        {categoryLabel(listing.category)}
+                        {labelFor(CATEGORIES,listing.category)}
                       </p>
                       <h3 className="font-display text-lg font-semibold text-[var(--text-heading)] truncate">
                         {listing.title}
