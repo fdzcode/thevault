@@ -528,6 +528,11 @@ body.light .msg-bubble-theirs {
   100% { opacity: 0; transform: translateY(-80px) scale(1); }
 }
 
+@keyframes trust-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.25; }
+  50% { transform: scale(1.6); opacity: 0; }
+}
+
 /* ===== Animation Utility Classes — v7 ===== */
 .animate-in { animation: fadeIn 1s ease-out; }
 .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
